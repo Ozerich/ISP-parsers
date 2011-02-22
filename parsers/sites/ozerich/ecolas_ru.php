@@ -16,13 +16,13 @@ class ISP_ecolas_ru extends ItemsSiteParser_Ozerich
 		$base = array ();
 
         $text = $this->httpClient->getUrlText($this->shopBaseUrl."?page=RuOurShops&Sid=SID");
-        preg_match_all('#<TR><TD><A href="(.+?)">(.+?)</A></TD></TR>#sui', $text, $cities, PREG_SET_ORDER);
+        preg_match_all('#<TR><TD>(?:<P class=wysiwyg>)*<A href="(.+?)">(.+?)</A>#sui', $text, $cities, PREG_SET_ORDER);
         foreach($cities as $city)
         {
             $city_name = $this->txt($city[2]);
             $text = $this->httpClient->getUrlText($this->shopBaseUrl.$city[1]);
 
-            preg_match_all('#<TR><TD><FONT\s*color=\#009933>(.+?)</FONT></TD><TD>(.+?)</TD>#sui', $text, $shops, PREG_SET_ORDER);
+            preg_match_all('#<TR(?:\s*vAlign=center)*><TD(?:\s*vAlign=center align=left)*><FONT\s*color=\#009933>(.+?)</FONT></TD><TD(?:\s*vAlign=center\s* align=left)*>(.+?)</TD>#sui', $text, $shops, PREG_SET_ORDER);
             foreach($shops as $shop_value)
             {
                 $shop = new ParserPhysical();
@@ -44,12 +44,14 @@ class ISP_ecolas_ru extends ItemsSiteParser_Ozerich
             }
             
         }
+        print_r($base);
 
 		return $this->savePhysicalResult ($base); 
 	}
 	
 	public function loadNews ()
 	{
+
 		$base = array();
 
         $url = $this->shopBaseUrl."?page=RuNews&Sid=SID";
@@ -87,7 +89,6 @@ class ISP_ecolas_ru extends ItemsSiteParser_Ozerich
         }
 
         
-            
 		return $this->saveNewsResult($base);
 	}
 }
