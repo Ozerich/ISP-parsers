@@ -13,7 +13,7 @@ class ISP_ecolas_ru extends ItemsSiteParser_Ozerich
 	
 	public function loadPhysicalPoints () 
 	{
-		$base = array ();
+        $base = array ();
 
         $text = $this->httpClient->getUrlText($this->shopBaseUrl."?page=RuOurShops&Sid=SID");
         preg_match_all('#<TR><TD>(?:<P class=wysiwyg>)*<A href="(.+?)">(.+?)</A>#sui', $text, $cities, PREG_SET_ORDER);
@@ -44,7 +44,6 @@ class ISP_ecolas_ru extends ItemsSiteParser_Ozerich
             }
             
         }
-        print_r($base);
 
 		return $this->savePhysicalResult ($base); 
 	}
@@ -87,8 +86,6 @@ class ISP_ecolas_ru extends ItemsSiteParser_Ozerich
         
             $base[] = $news_item;
         }
-
-        
 		return $this->saveNewsResult($base);
 	}
 }

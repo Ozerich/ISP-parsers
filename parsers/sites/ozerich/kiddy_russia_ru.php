@@ -8,14 +8,12 @@ class ISP_kiddy_russia_ru extends ItemsSiteParser_Ozerich
 	
 	public function loadItems () 
 	{
-        $base = array();
-
-            //Кривой сайт!!!
-        return $this->saveItemsResult($base);
-	}
+        return null;
+    }
 	
 	public function loadPhysicalPoints () 
 	{
+        return null;
 		$base = array ();
 
         $text = $this->httpClient->getUrlText($this->shopBaseUrl."index1.php?info=contact");
@@ -62,6 +60,19 @@ class ISP_kiddy_russia_ru extends ItemsSiteParser_Ozerich
     
             $base[] = $news_item;
         }
+
+
+        $url = $this->shopBaseUrl."index1.php?info=present";
+        $text = $this->httpClient->getUrlText($url);
+        preg_match('#<p class="MsoNormal"><font color="\#ff0000" size="3"><font color="\#000000" size="\+0">(.+?)<p class="MsoNormal">#sui', $text, $text);
+
+        $news_item = new ParserNews();
+
+        $news_item->urlShort = $news_item->urlFull = $url;
+        $news_item->contentShort = $news_item->contentFull = $text[1];
+
+        $base[] = $news_item;
+        
 
 		return $this->saveNewsResult($base);
 	}
