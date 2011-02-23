@@ -13,7 +13,6 @@ class ISP_kiddy_russia_ru extends ItemsSiteParser_Ozerich
 	
 	public function loadPhysicalPoints () 
 	{
-        return null;
 		$base = array ();
 
         $text = $this->httpClient->getUrlText($this->shopBaseUrl."index1.php?info=contact");
