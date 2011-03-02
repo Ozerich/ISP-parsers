@@ -15,7 +15,7 @@ class ISP_ugdvor_ru extends ItemsSiteParser_Ozerich
   
 	public function loadItems () 
 	{
-		$base = array();
+        $base = array();
 
         $this->shopBaseUrl = "http://kiwi.ugdvor.ru/";
         $text = $this->httpClient->getUrlText($this->shopBaseUrl."h/search.html");
@@ -52,6 +52,12 @@ class ISP_ugdvor_ru extends ItemsSiteParser_Ozerich
                     if($image)
                         $item->images[] = $this->loadImage(str_replace('tc','ic',$image[1]));
 
+                    preg_match('#Код: (\d+)$#sui', $item->name, $articul);
+                    if($articul)
+                    {
+                        $item->name = str_replace($articul[0], '', $item->name);
+                        $item->articul = $this->txt($articul[1]);
+                    }
                     $collection->items[] = $item;
                 }
             }
@@ -65,7 +71,7 @@ class ISP_ugdvor_ru extends ItemsSiteParser_Ozerich
 	
 	public function loadPhysicalPoints () 
 	{
-		$base = array ();
+        $base = array ();
 
         $this->shopBaseUrl = "http://www.ugdvor.ru/";
         $text = $this->httpClient->getUrlText($this->shopBaseUrl."shops/");
