@@ -1,4 +1,5 @@
 .idea/*
-*.xsl
 data/cache/*
 data/results/*
+*.html
+*.xml

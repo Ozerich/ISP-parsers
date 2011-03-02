@@ -174,6 +174,34 @@ class ISP_consul_ru extends ItemsSiteParser_Ozerich
             $base[] = $news_item;
         }
 
+        $url = $this->shopBaseUrl."discount.asp";
+        $text = $this->httpClient->getUrlText($url);
+        preg_match_all('#<TD vAlign=top>\s*<P>(.+?)<STRONG>(.+?)</STRONG>\s*</P>\s*<P><A href="(.+?)">#sui', $text, $news, PREG_SET_ORDER);
+
+        $ids = 1;
+        foreach($news as $news_value)
+        {
+            $news_item = new ParserNews();
+
+            $news_item->date = $this->txt($news_value[1]);
+            $news_item->header = $this->txt($news_value[2]);
+            $news_item->contentShort = $news_value[2];
+            $news_item->urlShort = $url;
+            $news_item->urlFull = $this->txt($news_value[3]);
+
+            preg_match('#Id_news=(\d+)#sui', $news_item->urlFull, $id);
+            $news_item->id = $id ? $id[1] : $ids++;
+
+            $text = $this->httpClient->getUrlText($news_item->urlFull);
+            preg_match('#<div style="margin-left:20px;margin-right:20px;margin-top:20px;">(.+?)</div>#sui', $text, $content);
+            if($content)
+                $news_item->contentFull = $content[1];
+            
+
+            $base[] = $news_item;
+        }
+        
+
         return $this->saveNewsResult($base);
 	}
 }

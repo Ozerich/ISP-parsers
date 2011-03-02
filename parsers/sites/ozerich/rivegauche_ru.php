@@ -101,7 +101,7 @@ class ISP_rivegauche_ru extends ItemsSiteParser_Ozerich
 
             $text = $this->httpClient->getUrlText($news_item->urlFull);
             preg_match('#<div class="newsPormotionalImage" style="text-align: left;">.+?</div>(.+?)<div style="margin-bottom:\d+px"><#sui', $text, $content);
-            $news_item->contentFull = $content[1];
+            if($content)$news_item->contentFull = $content[1];
 
             $base[] = $news_item;
         }

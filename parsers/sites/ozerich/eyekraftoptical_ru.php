@@ -88,28 +88,33 @@ class ISP_eyekraftoptical_ru extends ItemsSiteParser_Ozerich
 	{
 		$base = array();
 
-        $url = $this->shopBaseUrl."about/news";
-        $text = $this->httpClient->getUrlText($url);
-
-        preg_match_all('#<div class=news_archive_date>(.+?)</div>\s*<div><a href="/(about/news/item(\d+))" class=news_link>(.+?)</a></div>#sui', $text, $news, PREG_SET_ORDER);
-
-        foreach($news as $news_value)
+        $urls = array("about/news", "about/actions");
+        foreach($urls as $url)
         {
-            $news_item = new ParserNews();
-
-            $news_item->date = $news_value[1];
-            $news_item->urlShort = $url;
-            $news_item->urlFull = $this->shopBaseUrl.$news_value[2];
-            $news_item->id = $news_value[3];
-            $news_item->header = $this->txt($news_value[4]);
-
-            $text = $this->httpClient->getUrlText($news_item->urlFull);
-            preg_match_all('#<div class=news_anons>(.+?)</div>#sui', $text, $content);
-            $news_item->contentFull = $content[1][1];
-        
-            $base[] = $news_item;
-        }
+            $url = $this->shopBaseUrl.$url;
+            $text = $this->httpClient->getUrlText($url);
+    
+            preg_match_all('#<div class=news_archive_date>(.+?)</div>\s*<div><a href="/(about/.+?/item(\d+))" class=news_link>(.+?)</a></div>#sui', $text, $news, PREG_SET_ORDER);
+    
+            foreach($news as $news_value)
+            {
+                $news_item = new ParserNews();
+    
+                $news_item->date = $news_value[1];
+                $news_item->urlShort = $url;
+                $news_item->urlFull = $this->shopBaseUrl.$news_value[2];
+                $news_item->id = $news_value[3];
+                $news_item->header = $this->txt($news_value[4]);
+    
+                $text = $this->httpClient->getUrlText($news_item->urlFull);
+                preg_match_all('#<div class=news_anons>(.+?)</div>#sui', $text, $content);
+                $news_item->contentFull = $content[1][1];
             
+                $base[] = $news_item;
+            }
+        }
+
+                
 		return $this->saveNewsResult($base);
 	}
 }

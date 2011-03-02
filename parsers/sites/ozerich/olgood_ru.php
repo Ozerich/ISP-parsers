@@ -9,6 +9,7 @@ class ISP_olgood_ru extends ItemsSiteParser_Ozerich
 
     private function parse_item($url, $categ)
     {
+        print_r($url);
         $text = $this->httpClient->getUrlText($url);
 
         $item = new ParserItem();
@@ -23,7 +24,7 @@ class ISP_olgood_ru extends ItemsSiteParser_Ozerich
 
 
         preg_match('#<div class="description">(.+?)</div>#sui', $text, $descr);
-        if($descr)$item->descr = $descr[1];
+        if($descr)$item->descr = $this->txt($descr[1]);
 
         preg_match('#<span class="price.+?"><span>(.+?)руб.</span>#sui', $text, $price);
         if($price)$item->price = str_replace(' ','',$price[1]);

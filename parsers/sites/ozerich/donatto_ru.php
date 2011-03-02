@@ -57,7 +57,7 @@ class ISP_donatto_ru extends ItemsSiteParser_Ozerich
 	
 	public function loadPhysicalPoints () 
 	{
-		$base = array ();
+     	$base = array ();
 
         $this->add_address_prefix("ЦУМ");
 
@@ -122,7 +122,8 @@ class ISP_donatto_ru extends ItemsSiteParser_Ozerich
 
             $text = $this->httpClient->getUrlText($news_item->urlFull);
             preg_match('#<span class="news_article">(.+?)</span>#sui', $text, $content);
-            $news_item->contentFull = $content[1];
+            if($content)
+                $news_item->contentFull = $content[1];
             
     
             $base[] = $news_item;

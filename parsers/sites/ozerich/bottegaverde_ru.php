@@ -11,11 +11,11 @@ class ISP_bottegaverde_ru extends ItemsSiteParser_Ozerich
     {
         parent::__construct($savePath); 
         $this->httpClient->setIgnoreBadCodes();
-        $this->httpClient->setRequestsPause(1.5);
     }
 	
 	public function loadItems () 
 	{
+        return null;
 		$base = array();
 
         $text = $this->httpClient->getUrlText($this->shopBaseUrl);
@@ -136,8 +136,6 @@ class ISP_bottegaverde_ru extends ItemsSiteParser_Ozerich
 	
 	public function loadNews ()
 	{
-		$base = array();
-		
-		return $this->saveNewsResult($base);
-	}
+        return null;
+    }
 }

@@ -50,7 +50,6 @@ class ISP_ecolas_ru extends ItemsSiteParser_Ozerich
 	
 	public function loadNews ()
 	{
-
 		$base = array();
 
         $url = $this->shopBaseUrl."?page=RuNews&Sid=SID";

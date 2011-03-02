@@ -15,6 +15,7 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
 
     private function parseItem($url)
     {
+        return null;
         $url = str_replace('&amp;','&',$url);
         $text = $this->httpClient->getUrlText($url);
 
@@ -86,6 +87,7 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
         preg_match('#<div class="menu">(.+?)</div></div></div#sui', $text, $text);
         preg_match_all('#<h3 class="s5_am_toggler"><span class="s5_accordion_menu_left" /><a class="mainlevel" href="/(.+?)"><span>(.+?)</span>.+?<ul class="s5_am_innermenu">(.+?)</ul>#sui', $text[1], $collections, PREG_SET_ORDER);
 
+
         foreach($collections as $collection_value)
         {
             $collection_item = new ParserCollection();
@@ -97,10 +99,13 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
             $text = $collection_value[3];
             preg_match_all('#<li class="s5_am_inner_li"><a class="mainlevel" href="/(.+?)"><span>(.+?)</span></a></li>#sui', $text, $categories, PREG_SET_ORDER);
 
+
             foreach($categories as $category_value)
             {
                 $category_name = $this->txt($category_value[2]);
                 $text = $this->httpClient->getUrlText($this->shopBaseUrl.$category_value[1]);
+
+                $text = $this->httpClient->getUrlText("http://www.new-j.ru/sumki/sumki-jenskie");
 
                 if(mb_strpos($text, "Показать #&nbsp;&nbsp;") !== false)
                 {

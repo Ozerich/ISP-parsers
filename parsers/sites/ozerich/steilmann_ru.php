@@ -29,7 +29,7 @@ class ISP_steilmann_ru extends ItemsSiteParser_Ozerich
         {
             $news_item = new ParserNews();
 
-           // $news_item->id = $news_value[2];
+            $news_item->id = $news_value[2];
             $news_item->urlShort = $url;
             $news_item->urlFull = str_replace('%E2%80','%E2%80%93',$this->urlencode_partial($news_value[1]));
             $news_item->header = $this->txt($news_value[3]);

@@ -72,14 +72,16 @@ class ISP_mothercare_ru extends ItemsSiteParser_Ozerich
                 $item->colors[] = $this->txt($color_item);
         }
 
+        if(mb_strpos($item->descr, "Цена") !== false)
+            $item->descr = trim(mb_substr($item->descr, 0, mb_strpos($item->descr, "Цена")));
 
-
+            
         return $item;
     }
 
 	public function loadItems () 
 	{
-		$base = array();
+    	$base = array();
 
         $text = $this->httpClient->getUrlText($this->shopBaseUrl."?mode=cat");
         preg_match('#<a href=\?mode=cat class=m0>КАТАЛОГ</a></td></tr>(.+?)</td><td>&nbsp;</td></form></tr>#sui', $text, $text);
@@ -242,7 +244,7 @@ class ISP_mothercare_ru extends ItemsSiteParser_Ozerich
         {
             $news_item = new ParserNews();
 
-            $news_item->date = $this->txt($news_value[1]);
+            $news_item->date = mb_substr($this->txt($news_value[1]), 0, -1);
             $news_item->header = $this->txt($news_value[2]);
             $news_item->contentShort = $news_value[2];
             $news_item->urlShort = $url;

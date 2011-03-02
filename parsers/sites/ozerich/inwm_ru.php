@@ -22,8 +22,7 @@ class ISP_inwm_ru extends ItemsSiteParser_Ozerich
         foreach($shops[1] as $url)
         {
             $text = $this->httpClient->getUrlText($this->shopBaseUrl.$url);
-           // $text = $this->httpClient->getUrlText("http://www.inwm.ru/Shop+finder/Ekaterinburg-Xays.htm");
-
+           
             $shop = new ParserPhysical();
             
             preg_match('#<h1>(.+?)</h1>#sui', $text, $city);
@@ -122,6 +121,24 @@ class ISP_inwm_ru extends ItemsSiteParser_Ozerich
     
             $base[] = $news_item;
         }
+
+        $url = $this->shopBaseUrl."news/news.htm";
+        $text = $this->httpClient->getUrlText($url);
+
+        preg_match_all('#<div class="news" align="justify">(.+?)<br />(.+?)</div>(.+?)</div>\s*</div>#sui', $text, $news, PREG_SET_ORDER);
+        foreach($news as $news_value)
+        {
+            $news_item = new ParserNews();
+
+            $news_item->date = $this->txt($news_value[1]);
+            $news_item->header = $this->txt($news_value[2]);
+            $news_item->contentShort = $this->txt($news_item->header);
+            $news_item->urlFull = $news_item->urlShort = $url;
+            $news_item->contentFull = $news_value[3];
+        
+            $base[] = $news_item;
+        }
+        
         
             
 		return $this->saveNewsResult($base);

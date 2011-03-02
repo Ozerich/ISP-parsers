@@ -20,15 +20,14 @@ require_once PARSERS_BASE_DIR . '/debugFunctions.php';
 $allParsers = array 
 (
 	'1'	=> new ParserExecuteInfo ('ozerich/almazholding_ru.php', 		'ISP_almazholding_ru'),		
-	'5'	=> new ParserExecuteInfo ('ozerich/ringo_info.php', 		'ISP_ringo_info'),	
-	'8'	=> new ParserExecuteInfo ('ozerich/wlogic_ru.php', 		'ISP_wlogic_ru'),	
-	'2'	=> new ParserExecuteInfo ('ozerich/ray_sport_ru.php', 		'ISP_ray_sport_ru'),	
-	'4'	=> new ParserExecuteInfo ('ozerich/estelle_ru.php', 		'ISP_estelle_ru'),	
+	'2'	=> new ParserExecuteInfo ('ozerich/ringo_info.php', 		'ISP_ringo_info'),	
+	'3'	=> new ParserExecuteInfo ('ozerich/wlogic_ru.php', 		'ISP_wlogic_ru'),	
+	'4'	=> new ParserExecuteInfo ('ozerich/ray_sport_ru.php', 		'ISP_ray_sport_ru'),	
+	'5'	=> new ParserExecuteInfo ('ozerich/estelle_ru.php', 		'ISP_estelle_ru'),	
 	'6'	=> new ParserExecuteInfo ('ozerich/francesco_ru.php', 		'ISP_francesco_ru'),	
-	'9'	=> new ParserExecuteInfo ('ozerich/olehouse_ru.php', 		'ISP_olehouse_ru'),
-	'3'	=> new ParserExecuteInfo ('ozerich/mizuno_eu.php', 		'ISP_mizuno_eu'),
-	'7'	=> new ParserExecuteInfo ('ozerich/pjl73_ru.php', 		'ISP_pjl73_ru'),
-    
+	'7'	=> new ParserExecuteInfo ('ozerich/olehouse_ru.php', 		'ISP_olehouse_ru'),
+	'8'	=> new ParserExecuteInfo ('ozerich/mizuno_eu.php', 		'ISP_mizuno_eu'),
+	'9'	=> new ParserExecuteInfo ('ozerich/pjl73_ru.php', 		'ISP_pjl73_ru'),
 	'11'	=> new ParserExecuteInfo ('ozerich/zimaletto_ru.php', 		'ISP_zimaletto_ru'),
 	'12'	=> new ParserExecuteInfo ('ozerich/td_charm_ru.php', 		'ISP_td_charm_ru'),
 	'13'	=> new ParserExecuteInfo ('ozerich/cashmere_ru.php', 		'ISP_cashmere_ru'),
@@ -39,8 +38,11 @@ $allParsers = array
 	'18'	=> new ParserExecuteInfo ('ozerich/bottegaverde_ru.php', 		'ISP_bottegaverde_ru'),
 	'19'	=> new ParserExecuteInfo ('ozerich/buono_ru.php', 		'ISP_buono_ru'),
 	'10'	=> new ParserExecuteInfo ('ozerich/courtney_g_ru.php', 		'ISP_courtney_g_ru'),
-
-    
+    '20'	=> new ParserExecuteInfo ('ozerich/wildorchid_ru.php', 		'ISP_wildorchid_ru', 1884),
+    '21'	=> new ParserExecuteInfo ('ozerich/wildorchid_ru.php', 		'ISP_wildorchid_ru', 5229),
+    '22'	=> new ParserExecuteInfo ('ozerich/wildorchid_ru.php', 		'ISP_wildorchid_ru', 22491),
+    '23'	=> new ParserExecuteInfo ('ozerich/wildorchid_ru.php', 		'ISP_wildorchid_ru', 22492),
+    '24'    => new ParserExecuteInfo ('ozerich/wildorchid_ru.php',      'ISP_wildorchid_ru', 1030),
 	'25'	=> new ParserExecuteInfo ('ozerich/rivegauche_ru.php', 		'ISP_rivegauche_ru'),
 	'26'	=> new ParserExecuteInfo ('ozerich/litgen_ru.php', 		'ISP_litgen_ru'),
 	'27'	=> new ParserExecuteInfo ('ozerich/zoloto585_ru.php', 		'ISP_zoloto585_ru'),
@@ -53,11 +55,7 @@ $allParsers = array
 	'34'	=> new ParserExecuteInfo ('ozerich/donatto_ru.php', 		'ISP_donatto_ru'),
 	'35'	=> new ParserExecuteInfo ('ozerich/edmins_ru.php', 		'ISP_edmins_ru'),
 	'36'	=> new ParserExecuteInfo ('ozerich/eternel_ru.php', 		'ISP_eternel_ru'),
-	'37'	=> new ParserExecuteInfo ('ozerich/eyekraftoptical_ru.php', 		'ISP_eyekraftoptical_ru'),
-
-
-
-    
+	'37'	=> new ParserExecuteInfo ('ozerich/eyekraftoptical_ru.php', 		'ISP_eyekraftoptical_ru'),    
 	'50'	=> new ParserExecuteInfo ('ozerich/inwm_ru.php', 		'ISP_inwm_ru'),
 	'51'	=> new ParserExecuteInfo ('ozerich/minomin_ru.php', 		'ISP_minomin_ru'),
 	'51'	=> new ParserExecuteInfo ('ozerich/naracamicie_ru.php', 		'ISP_naracamicie_ru'),
@@ -85,16 +83,6 @@ $allParsers = array
 	'73'	=> new ParserExecuteInfo ('ozerich/savage_ru.php', 		'ISP_savage_ru'),
 	'74'	=> new ParserExecuteInfo ('ozerich/consul_ru.php', 		'ISP_consul_ru'),
 	'75'	=> new ParserExecuteInfo ('ozerich/eromoda_ru.php', 		'ISP_eromoda_ru'),
-
-
-
-
-
-    '20'	=> new ParserExecuteInfo ('ozerich/wildorchid_ru.php', 		'ISP_wildorchid_ru', 1884),
-    '21'	=> new ParserExecuteInfo ('ozerich/wildorchid_ru.php', 		'ISP_wildorchid_ru', 5229),
-    '22'	=> new ParserExecuteInfo ('ozerich/wildorchid_ru.php', 		'ISP_wildorchid_ru', 22491),
-    '23'	=> new ParserExecuteInfo ('ozerich/wildorchid_ru.php', 		'ISP_wildorchid_ru', 22492),
-    '24'    => new ParserExecuteInfo ('ozerich/wildorchid_ru.php',      'ISP_wildorchid_ru', 1030),
 
     
     

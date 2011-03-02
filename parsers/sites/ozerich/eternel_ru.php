@@ -52,12 +52,12 @@ class ISP_eternel_ru extends ItemsSiteParser_Ozerich
         preg_match_all('#<a href="/(\?area=news&amp;id=news\d+)">#sui', $text, $news);
         $news = $news[1];
 
-        $text = $this->httpClient->getUrlText($this->shopBaseUrl.$news[0]);
-        preg_match('#<a href="/(\?area=news&amp;id=news\d+)">#sui', $text, $first_news);
-        $news = array($first_news[1]) + $news;
+        $first = false;
 
-        foreach($news as $news_value)
+        $i = 0;
+        while($i < count($news))
         {
+            $news_value = $news[$i];
             $news_item = new ParserNews();
 
             $news_item->urlShort = $url;
@@ -66,8 +66,14 @@ class ISP_eternel_ru extends ItemsSiteParser_Ozerich
 
             $text = $this->httpClient->getUrlText($news_item->urlFull);
 
+            if($first == false)
+            {
+                preg_match('#<li>\s*<a href="/(.+?)">#sui', $text, $first_link);
+                $first = true;
+                $news[] = $first_link[1];
+            }
+
             preg_match('#<p class="date">(.+?)</p>\s*<div class="descr"><p><center><b>(.+?)</b></center></p>(.+?)</div>\s*<div class="fulltext">(.+?)</div>#sui', $text, $info);
-            
             
             $news_item->date = $info[1];
             $news_item->contentShort = $info[2];
@@ -75,6 +81,7 @@ class ISP_eternel_ru extends ItemsSiteParser_Ozerich
             $news_item->contentFull = $info[4];
             
             $base[] = $news_item;
+            $i++;
         }
     
 		return $this->saveNewsResult($base);
