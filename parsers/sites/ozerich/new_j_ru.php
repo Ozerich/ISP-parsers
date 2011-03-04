@@ -15,7 +15,6 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
 
     private function parseItem($url)
     {
-        return null;
         $url = str_replace('&amp;','&',$url);
         $text = $this->httpClient->getUrlText($url);
 
@@ -29,19 +28,19 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
         preg_match('#product_id=(\d+)#sui', $text, $id);
         $item->id = $id[1];
 
-        preg_match('#<span style="color:red;" class="productPrice">.+?:\s*(.+?)\.#sui', $text, $price);
+        preg_match('#<span style="color:\#f0f0f0;" class="productPrice">.+?:\s*(.+?)\.#sui', $text, $price);
         if($price)$item->price = str_replace(' ','',$price[1]);
 
         preg_match('#<td width="9%" rowspan="3"><a href="(.+?)"#sui', $text, $image);
-        $image =  $this->loadImage($image[1], false);
+        //$image =  $this->loadImage($image[1], false);
         if(!$image)
         {
             preg_match('#<img src="(.+?)"#sui', $text, $image);
-            $image = $this->loadImage($image[1], false);
+          //  $image = $this->loadImage($image[1], false);
         }
 
-        if($image)
-            $item->images[] = $image;
+       // if($image)
+            //$item->images[] = $image;
 
         preg_match('#<strong>Артикул:</strong>(.+?)<br(?: /)*>#sui', $text, $articul);
         if($articul)$item->articul = $this->txt($articul[1]);

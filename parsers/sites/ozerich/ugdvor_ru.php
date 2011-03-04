@@ -110,22 +110,27 @@ class ISP_ugdvor_ru extends ItemsSiteParser_Ozerich
         $url = $this->shopBaseUrl."news/";
         $text = $this->httpClient->getUrlText($url);
 
-        preg_match_all('#<h1 class="title">\s*<a href="/(.+?)">(.+?)</a>\s*</h1>.+?<span class="created">(.+?)</span>(.+?)</div>#sui', $text, $news, PREG_SET_ORDER);
+        preg_match_all('#<td class="contentheading" width="100%">(.+?)</td>.+?<table class="contentpaneopen">(.+?)</table>#sui', $text, $news,
+            PREG_SET_ORDER);
+
 
         foreach($news as $news_value)
         {
             $news_item = new ParserNews();
 
             $news_item->urlShort = $url;
-            $news_item->urlFull = $this->shopBaseUrl.$news_value[1];
-            $news_item->id = mb_substr($news_item->urlFull, mb_strrpos($news_item->urlFull, "/") + 1, mb_strrpos($news_item->urlFull, ".") - mb_strrpos($news_item->urlFull, "/") - 1);
-            $news_item->header = $this->txt($news_value[2]);
-            $news_item->date = $this->date_to_str($this->txt($news_value[3]));
-            $news_item->contentShort = $news_value[4];
+            $news_item->header = $this->txt($news_value[1]);
+            $news_item->contentShort = $news_value[2];
 
-            $text = $this->httpClient->getUrlText($news_item->urlFull);
-            preg_match('#span class="created">.+?</span>(.+?)</div>#sui', $text, $content);
-            $news_item->contentFull = $content[1]; 
+            preg_match('#<a class="readmore-link" href="/(.+?)"#sui', $news_item->contentShort, $url_full);
+            if($url_full)
+            {
+                $text = $this->httpClient->getUrlText($this->shopBaseUrl.$url_full[1]);
+                preg_match('#<td valign="top">(.+?)</table>#sui', $text, $content);
+                if($content)
+                    $news_item->contentFull = $content[1];
+            }
+
     
             $base[] = $news_item;
         }

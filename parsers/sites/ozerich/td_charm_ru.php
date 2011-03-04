@@ -153,7 +153,7 @@ class ISP_td_charm_ru extends ItemsSiteParser_Ozerich
        
 
         $text = $this->httpClient->getUrlText("http://www.grodes.ru/?menu=ru-events");
-        preg_match_all('#<h4>(.+?)</h4><h2 style="text-align:left; color:\#D00;">(.+?)</h2></p><p><a href="/(\?menu=ru-main-news-(\d+))"#sui', $text, $news, PREG_SET_ORDER);
+        preg_match_all('#<h4>(.+?)</h4>(.+?)</p><p><a href="/(\?menu=ru-main-news-(\d+))"#sui', $text, $news, PREG_SET_ORDER);
 
         foreach($news as $news_value)
         {
@@ -161,7 +161,7 @@ class ISP_td_charm_ru extends ItemsSiteParser_Ozerich
 
             $news_item->id = $news_value[4];
             $news_item->date = $this->reverse_date($news_value[1]);
-            $news_item->header = $this->txt($news_value[2]);
+            $news_item->header = $this->txt(str_replace('</h3>',' ',$news_value[2]));
             $news_item->contentShort = $news_value[2];
             $news_item->urlShort = $url;
             $news_item->urlFull = $url.$news_value[3];

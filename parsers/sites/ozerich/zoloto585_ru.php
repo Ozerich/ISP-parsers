@@ -59,7 +59,7 @@ class ISP_zoloto585_ru extends ItemsSiteParser_Ozerich
         $url = $this->shopBaseUrl."news/";
         $text = $this->httpClient->getUrlText($url);
         preg_match('#<div class="news">(.+?)</div></div></div>#sui', $text, $text);
-        preg_match_all('#<dl><dt>(.+?)</dt><dd><a href="/(news/id/(\d+))" class="header">(.+?)</a>(.+?)</dd>#sui', $text[1], $news, PREG_SET_ORDER);
+        preg_match_all('#<dt>(.+?)</dt><dd><a href="/(news/id/(\d+))" class="header">(.+?)</a>(.+?)</dd>#sui', $text[1], $news, PREG_SET_ORDER);
 
         foreach($news as $news_value)
         {

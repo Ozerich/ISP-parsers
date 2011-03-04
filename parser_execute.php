@@ -49,6 +49,7 @@ $allParsers = array
 	'28'	=> new ParserExecuteInfo ('ozerich/charmante_ru.php', 		'ISP_charmante_ru'),
 	'29'	=> new ParserExecuteInfo ('ozerich/clairesrussia_ru.php', 		'ISP_clairesrussia_ru'),
 	'30'	=> new ParserExecuteInfo ('ozerich/steilmann_ru.php', 		'ISP_steilmann_ru'),
+	'30'	=> new ParserExecuteInfo ('ozerich/steilmann_ru.php', 		'ISP_steilmann_ru'),
 	'31'	=> new ParserExecuteInfo ('ozerich/deffinesse_net.php', 		'ISP_deffinesse_net'),
 	'32'	=> new ParserExecuteInfo ('ozerich/olgood_ru.php', 		'ISP_olgood_ru'),
 	'33'	=> new ParserExecuteInfo ('ozerich/ugdvor_ru.php', 		'ISP_ugdvor_ru'),

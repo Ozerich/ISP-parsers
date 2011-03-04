@@ -8,7 +8,6 @@ class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
 	
 	public function loadItems () 
 	{
-        return null;
 		$base = array();
 
         $text = $this->httpClient->getUrlText($this->shopBaseUrl);
@@ -182,29 +181,6 @@ class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
 	public function loadNews ()
 	{
 		$base = array();
-
-        $url = $this->shopBaseUrl."about/publications/";
-
-        $text = $this->httpClient->getUrlText($url);
-        preg_match_all('#<span class="date">(.+?)</span>\s*<a href="/(about/publications/(\d+)/)">(.+?)</a>\s*<div>(.+?)</div>#sui', $text, $news, PREG_SET_ORDER);
-
-        foreach($news as $news_value)
-        {
-            $news_item = new ParserNews();
-
-            $news_item->date = $this->date_to_str($news_value[1]);
-            $news_item->id = $news_value[3];
-            $news_item->urlShort = $url;
-            $news_item->urlFull = $this->shopBaseUrl.$news_value[2];
-            $news_item->header = $this->txt($news_value[4]);
-            $news_item->contentShort = $news_value[5];
-
-            $text = $this->httpClient->getUrlText($news_item->urlFull);
-            preg_match('#<div class="news_text" style="padding:5px 0px;">(.+?)</div>#sui', $text, $content);
-            $news_item->contentFull = $content[1];
-    
-            $base[] = $news_item;
-        }
 		
 		return $this->saveNewsResult($base);
 	}

@@ -48,7 +48,7 @@ abstract class ItemsSiteParser_Ozerich extends ItemsSiteParser
 	public function txt($text)
 	{
 
-		$text = str_replace(array("<BR>",'<br />','<br>','<BR />','&nbsp;', "&laquo;", "&raquo", "&quot;", "&ndash;","&mdash;","«","»","&amp;","&gt","&minus;","&#0150;","&#150;","&bull;","&rsaquo;","&#233;",'\\"','/"',"&#40;","&#41","&#37;","&#171;","&#187;","&ldquo;","&rdquo;",'&#225;','&#218;','&#345;','&#353;','&amp;','&#215;'), array("\n","\n","\n","\n",' ','"','"','"','-',"-",'"','"','&',">","-","-","-","*",">","é",'"','"','(',')','%','"','"','"','"','á','Ú','ř','š','&','×'), $text);
+		$text = str_replace(array("<BR>",'<br />','<br>','<BR />','&nbsp;', "&laquo;", "&raquo;", "&quot;", "&ndash;","&mdash;","«","»","&amp;","&gt","&minus;","&#0150;","&#150;","&bull;","&rsaquo;","&#233;",'\\"','/"',"&#40;","&#41","&#37;","&#171;","&#187;","&ldquo;","&rdquo;",'&#225;','&#218;','&#345;','&#353;','&amp;','&#215;'), array("\n","\n","\n","\n",' ','"','"','"','-',"-",'"','"','&',">","-","-","-","*",">","é",'"','"','(',')','%','"','"','"','"','á','Ú','ř','š','&','×'), $text);
 		$text = strip_tags($text);
         $text = htmlspecialchars_decode($text);
 		$text = trim($text);

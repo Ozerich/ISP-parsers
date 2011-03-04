@@ -8,66 +8,106 @@ class ISP_deffinesse_net extends ItemsSiteParser_Ozerich
 	
 	public function loadItems () 
 	{
-        return null;
+        $this->shopBaseUrl =  "http://www.boutique-online.ru/";
+        $base = array();
+
+        $text = $this->httpClient->getUrlText($this->shopBaseUrl);
+        preg_match_all('#<nobr><a href="/(catalog/(.+?)/)" ><font color="\#000000">(.+?)</font></a></nobr>#sui',
+            $text, $collections, PREG_SET_ORDER);
+        foreach($collections as $collection_value)
+        {
+            $collection = new ParserCollection();
+
+            $collection->url = $this->shopBaseUrl.$collection_value[1];
+            $collection->id = $collection_value[2];
+            $collection->name = $this->txt($collection_value[3]);
+
+            $text = $this->httpClient->getUrlText($collection->url);
+            preg_match('#<div class="menuCat">(.+?)</div></div></div>#sui', $text, $text);
+            preg_match_all('#<div class="wBlock".+?><a href="/(.+?)">(.+?)</a></div>#sui', $text[1], $categories,
+                           PREG_SET_ORDER);
+            if(!$categories)
+                $categories = array(array("1"=>$collection_value[1], "2"=>""));
+            foreach($categories as $category)
+            {
+                $category_name = $this->txt($category[2]);
+                $text = $this->httpClient->getUrlText($this->urlencode_partial($this->shopBaseUrl.$category[1]."?page=all&sortBy="));
+
+                preg_match_all('#><div style="display: table-cell; vertical-align:bottom;"><a href="/(thing/(.+?)/)" class="type2">(.+?)</a><br>.+?</b><br><br></div><div class="gPrice_new">(.+?)руб.</div></td>#sui',
+                    $text, $items, PREG_SET_ORDER);
+                foreach($items as $item_value)
+                {
+                    $item = new ParserItem();
+
+                    $item->id = $item_value[2];
+                    $item->url = $this->shopBaseUrl.$item_value[1];
+                    $item->name = $this->txt($item_value[3]);
+                    $item->price = $this->txt($item_value[4]);
+
+                    $text = $this->httpClient->getUrlText($item->url);
+
+                    preg_match('#<div class="mBlock_g">Код товара:<div class="mInfoBlock">(.+?)</div>#sui', $text, $articul);
+                    $item->articul = $this->txt($articul[1]);
+
+                    preg_match('#<img src="/img/basket_white.gif".+?<td width="80%" valign="middle" style="vertical-align:middle; padding: 10px">(.+?)</td>#sui',
+                        $text, $descr);
+                    $item->descr = $this->txt($descr[1]);
+
+                    preg_match('#Состав:(.+?)<br>#sui', $text, $structure);
+                    $item->structure = $this->txt(str_replace('Данные не доступны.','',$structure[1]));
+
+                     preg_match('#<img id="largeImg".+?src="(.+?)"#sui', $text, $image);
+                    $item->images[] = $this->loadImage($image[1]);
+
+                   preg_match('#<ul id="mycarousel" class="jcarousel-skin-tango">(.+?)</ul>#sui', $text, $images_text);
+                    preg_match_all('#<a href="(.+?)"#sui', $images_text[1], $images);
+                    foreach($images[1] as $image)
+                        if(mb_strpos($image, "resize_jpg") !== false)
+                           $item->images[] = $this->loadImage(mb_substr($image, mb_strpos($image, "image=") + 6));
+                        else
+                           $item->images[] = $this->loadImage($image);
+
+                    preg_match('#<span id="mthingSpan" class="jcarousel-skin-tango">(.+?)</span>#sui', $text, $images_text);
+                    preg_match_all('#<a href="(.+?)"#sui', $images_text[1], $images);
+                    foreach($images[1] as $image)
+                        if(mb_strpos($image, "resize_jpg") !== false)
+                           $item->images[] = $this->loadImage(mb_substr($image, mb_strpos($image, "image=") + 6));
+                        else
+                           $item->images[] = $this->loadImage($image);
+
+                    $collection->items[] = $item;
+                }
+            }
+
+            $base[] = $collection;
+
+        }
+
+        return $this->saveItemsResult($base);
 	}
 	
 	public function loadPhysicalPoints () 
 	{
+        $this->shopBaseUrl =  "http://www.deffinesse.net/";
 		$base = array ();
 
         $text = $this->httpClient->getUrlText($this->shopBaseUrl."shops/");
-        preg_match_all('#<span style="color: \#ffffff">(.+?)</span>#sui', $text, $texts);
-        $i = 0;
-        while($i < count($texts[1]))
+        preg_match_all('#<p><span style="color: rgb\(255, 255, 255\);">(.+?)</p>#sui', $text, $texts, PREG_SET_ORDER);
+        for($i = 0; $i <= 1; $i++)
         {
             $text = $texts[1][$i];
-            if(mb_strpos($text, ".м.") === false && mb_strpos($text, "г .") === false)
+            preg_match_all('#<br />(.+?)(?=<br />)#sui', $text, $shops_text);
+            foreach($shops_text[1] as $text)
             {
-                $i++;
-                continue;
-            }
-            $shop = new ParserPhysical();
+                $text = str_replace(';','',$this->txt($text));
+                $shop = new ParserPhysical();
 
-            if(mb_strpos($text, "г .") !== false)
-            {
-                preg_match('#г . (.+?),#sui', $text, $city);
-                $shop->city = $city[1];
-                $text = str_replace($city[0], '', $text);
-            }
-            else
                 $shop->city = "Москва";
+                $shop->address = $this->address($text);
+                $shop->address = $this->fix_address($shop->address);
 
-            if(mb_substr_count($text, "ТЦ") == 2)
-            {
-                $text1 = mb_substr($text, 0, mb_strrpos($text, "ТЦ"));
-                $texts[1][] = "г . ".$shop->city.",".mb_substr($text, mb_strrpos($text, "ТЦ"));
-                $text = $text1;
+                $base[] = $shop;
             }
-
-
-            $shop->address = $this->address($text);
-            
-            $shop->address = str_replace(array('ст.','см.'),array('',''),$shop->address);
-            $shop->address = str_replace(' Чкаловская "', '',$this->address($shop->address));
-
-            preg_match('#время работы : (.+?)$#sui', $shop->address, $timetable);
-            if($timetable)
-            {
-                $shop->timetable = $timetable[1];
-                $shop->address = str_replace($timetable[0], '', $shop->address);
-            }
-
-            preg_match('#(?:тел \. :|тел\.|тел \. |\(тел\. \))([\d\(\)\s-]+)#sui', $shop->address, $phone);
-            if($phone)
-            {
-                $shop->phone = $phone[1];
-                $shop->address =str_replace($phone[0], '',$shop->address);
-            }
-
-            $shop->address = str_replace(' . ','.',$this->fix_address($shop->address));
-            
-            $base[] = $shop;
-            $i++;
         }
 
 		return $this->savePhysicalResult ($base); 
@@ -75,7 +115,9 @@ class ISP_deffinesse_net extends ItemsSiteParser_Ozerich
 	
 	public function loadNews ()
 	{
-		$base = array();
+        $this->shopBaseUrl =  "http://www.deffinesse.net/";
+
+        $base = array();
 
         $url = $this->shopBaseUrl."news";
         $text = $this->httpClient->getUrlText($url);
