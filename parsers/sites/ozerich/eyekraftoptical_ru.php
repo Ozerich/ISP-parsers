@@ -101,6 +101,7 @@ class ISP_eyekraftoptical_ru extends ItemsSiteParser_Ozerich
                 $news_item = new ParserNews();
     
                 $news_item->date = $news_value[1];
+                $news_item->date = $this->date_to_str($news_item->date);
                 $news_item->urlShort = $url;
                 $news_item->urlFull = $this->shopBaseUrl.$news_value[2];
                 $news_item->id = $news_value[3];

@@ -11,11 +11,11 @@ class ISP_bottegaverde_ru extends ItemsSiteParser_Ozerich
     {
         parent::__construct($savePath); 
         $this->httpClient->setIgnoreBadCodes();
+         $this->httpClient->setRequestsPause (0.5);
     }
 	
 	public function loadItems () 
 	{
-        return null;
 		$base = array();
 
         $text = $this->httpClient->getUrlText($this->shopBaseUrl);
@@ -76,7 +76,6 @@ class ISP_bottegaverde_ru extends ItemsSiteParser_Ozerich
                         preg_match('#<td width=262 valign=top><img src="/(.+?)"#sui', $text, $image);
                         $item->images[] = $this->loadImage($this->shopBaseUrl.$image[1]);
 
-                        //print_r($item);exit();
                         $collection->items[] = $item;
                     }
                     
@@ -96,6 +95,7 @@ class ISP_bottegaverde_ru extends ItemsSiteParser_Ozerich
 	
 	public function loadPhysicalPoints () 
 	{
+        $this->add_address_prefix('МЕГА');
 		$base = array ();
 
         $text = $this->httpClient->getUrlText("http://www.bottegaverde.ru/shop");
@@ -126,6 +126,7 @@ class ISP_bottegaverde_ru extends ItemsSiteParser_Ozerich
                     $shop->address = mb_substr($shop->address, 0, mb_strpos($shop->address, "м."));
 
                 $shop->address = $this->address($shop->address);
+                $shop->address = $this->fix_address($shop->address);
                 
                 $base[] = $shop;
             }

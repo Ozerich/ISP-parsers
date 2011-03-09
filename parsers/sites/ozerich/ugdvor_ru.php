@@ -58,7 +58,13 @@ class ISP_ugdvor_ru extends ItemsSiteParser_Ozerich
                         $item->name = str_replace($articul[0], '', $item->name);
                         $item->articul = $this->txt($articul[1]);
                     }
+
+                    preg_match('#(\d+)#sui', $item->name, $code);
+                    if($code)
+                        $item->name = trim(str_replace($code[1],'', $item->name));
+
                     $collection->items[] = $item;
+
                 }
             }
 
@@ -125,13 +131,27 @@ class ISP_ugdvor_ru extends ItemsSiteParser_Ozerich
             preg_match('#<a class="readmore-link" href="/(.+?)"#sui', $news_item->contentShort, $url_full);
             if($url_full)
             {
-                $text = $this->httpClient->getUrlText($this->shopBaseUrl.$url_full[1]);
-                preg_match('#<td valign="top">(.+?)</table>#sui', $text, $content);
+                $content_text = $this->httpClient->getUrlText($this->shopBaseUrl.$url_full[1]);
+                preg_match('#<td valign="top">(.+?)</table>#sui', $content_text, $content);
                 if($content)
                     $news_item->contentFull = $content[1];
             }
+            $base[] = $news_item;
+        }
 
-    
+        preg_match_all('#<a class="blogsection" href="/(.+?)">(.+?)</a>#sui', $text, $news, PREG_SET_ORDER);
+        foreach($news as $news_value)
+        {
+            $news_item = new ParserNews();
+
+            $news_item->contentShort = $news_value[2];
+            $news_item->header = $this->txt($news_value[2]);
+            $news_item->urlShort = $url;
+            $news_item->urlFull = $this->shopBaseUrl.$news_value[1];
+            $text = $this->httpClient->getUrlText($news_item->urlFull);
+            preg_match('#<td valign="top">(.+?)</td>#sui', $text, $content);
+            $news_item->contentFull = $content[1];
+
             $base[] = $news_item;
         }
 

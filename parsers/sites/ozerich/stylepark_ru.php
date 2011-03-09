@@ -5,7 +5,14 @@ require_once PARSERS_BASE_DIR . '/parsers/baseClasses/ozerich.php';
 class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
 { 
 	protected $shopBaseUrl = "http://www.s-t-p.ru/";
-	
+
+    public function __construct($savePath)
+    {
+        parent::__construct($savePath);
+        $this->httpClient->setRequestsPause (1);
+
+    }
+
 	public function loadItems () 
 	{
 		$base = array();
@@ -25,14 +32,15 @@ class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
 
             $text = $this->httpClient->getUrlText($collection_item->url);
             preg_match('#<div class="list_menu">(.+?)</div>#sui', $text, $text);
-            preg_match_all('#<li class="">\s*<a href=".+?">(.+?)<.+?<ul class="root-item">(.+?)</ul>#sui', $text[1], $categories, PREG_SET_ORDER);
-
+            preg_match_all('#<li class="">\s*<a href="/(.+?)">(.+?)<.+?<ul class="root-item">(.+?)</ul>#sui', $text[1], $categories, PREG_SET_ORDER);
 
             foreach($categories as $category)
             {
-                $category_name = $category[1];
-                $text = $category[2];
-                preg_match_all('#<a href="/(.+?)">(.+?)<#sui', $text, $sub_categories, PREG_SET_ORDER);
+                $category_name = $category[2];
+
+                $text = $this->httpClient->getUrlText($this->shopBaseUrl.$category[1]);
+                preg_match('#</p>\s*<ul>.+?<ul class="root-item">(.+?)</ul></li>#sui', $text, $text);
+                preg_match_all('#<a href="/(.+?)">(.+?)<#sui', $text[1], $sub_categories, PREG_SET_ORDER);
                 foreach($sub_categories as $sub_category)
                 {
                     $categ = array($category_name, $sub_category[2]);
@@ -49,8 +57,6 @@ class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
                         $item->name = $this->txt($info[2]);
                         $item->categ = $categ;
                         $item->price = str_replace(" ", "", $this->txt($info[3]));
-
-                        //$item->url="http://www.s-t-p.ru/catalog/824/SNL-120910/";
 
                         $text = $this->httpClient->getUrlText($item->url);
 
@@ -82,10 +88,13 @@ class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
                         $item->descr = $this->txt($descr[1]);
 
                         preg_match('#<div class="zoom-desc">(.+?)</div>#sui', $text, $image_text);
-                        preg_match_all('#<a href="/(.+?)"#sui', $image_text[1], $images);
-                        foreach($images[1] as $image)
-                            if(mb_strpos($image, "noimage") === false)
-                                $item->images[] = $this->loadImage($this->shopBaseUrl.$image);
+                        if($image_text)
+                        {
+                            preg_match_all('#<a href="/(.+?)"#sui', $image_text[1], $images);
+                            foreach($images[1] as $image)
+                                if(mb_strpos($image, "noimage") === false)
+                                    $item->images[] = $this->loadImage($this->shopBaseUrl.$image);
+                        }
                         $collection_item->items[] = $item;
                     }
                 }
@@ -148,10 +157,6 @@ class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
                 $shop->address = str_replace('. ,',',',$info[2]);
 
                 $shop->address = str_replace(chr(194).chr(160), '', $shop->address);
-                //$shop->address = str_replace('ул','ул.',$info[2]);
-
-                
-
                 preg_match('#<strong>(.+?)</strong>#sui', $shop->address, $phone);
                 if(!$phone)preg_match('#<br />\s*<b>(.+?)</b>#sui', $shop->address, $phone);
                 if($phone)
@@ -180,8 +185,6 @@ class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
 	
 	public function loadNews ()
 	{
-		$base = array();
-		
-		return $this->saveNewsResult($base);
+        return null;
 	}
 }

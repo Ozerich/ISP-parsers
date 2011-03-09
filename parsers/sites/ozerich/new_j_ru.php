@@ -13,7 +13,7 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
 
     }
 
-    private function parseItem($url)
+    private function parseItem($url, $category_name)
     {
         $url = str_replace('&amp;','&',$url);
         $text = $this->httpClient->getUrlText($url);
@@ -21,6 +21,7 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
         $item = new ParserItem();
 
         $item->url = $url;
+        $item->categ = $category_name;
 
         preg_match('#<div style="text-align: center;">\s*<h1>(.+?)</h1>#sui', $text, $name);
         $item->name = $this->txt($name[1]);
@@ -32,15 +33,15 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
         if($price)$item->price = str_replace(' ','',$price[1]);
 
         preg_match('#<td width="9%" rowspan="3"><a href="(.+?)"#sui', $text, $image);
-        //$image =  $this->loadImage($image[1], false);
+        $image =  $this->loadImage($image[1], false);
         if(!$image)
         {
             preg_match('#<img src="(.+?)"#sui', $text, $image);
-          //  $image = $this->loadImage($image[1], false);
+            $image = $this->loadImage($image[1], false);
         }
 
-       // if($image)
-            //$item->images[] = $image;
+        if($image)
+            $item->images[] = $image;
 
         preg_match('#<strong>Артикул:</strong>(.+?)<br(?: /)*>#sui', $text, $articul);
         if($articul)$item->articul = $this->txt($articul[1]);
@@ -86,7 +87,6 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
         preg_match('#<div class="menu">(.+?)</div></div></div#sui', $text, $text);
         preg_match_all('#<h3 class="s5_am_toggler"><span class="s5_accordion_menu_left" /><a class="mainlevel" href="/(.+?)"><span>(.+?)</span>.+?<ul class="s5_am_innermenu">(.+?)</ul>#sui', $text[1], $collections, PREG_SET_ORDER);
 
-
         foreach($collections as $collection_value)
         {
             $collection_item = new ParserCollection();
@@ -104,19 +104,10 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
                 $category_name = $this->txt($category_value[2]);
                 $text = $this->httpClient->getUrlText($this->shopBaseUrl.$category_value[1]);
 
-                $text = $this->httpClient->getUrlText("http://www.new-j.ru/sumki/sumki-jenskie");
+                 preg_match_all('#<div  style="font-size:14px; text-align:center; font-weight:bold;"><a href="/(.+?)"#sui', $text, $items);
+                 foreach($items[1] as $item_url)
+                    $collection_item->items[] = $this->parseItem($this->shopBaseUrl.$item_url,$category_name);
 
-                if(mb_strpos($text, "Показать #&nbsp;&nbsp;") !== false)
-                {
-                    preg_match('#category_id=(\d+)#sui', $text, $id);
-                    $text = $this->httpClient->getUrlText($collection_item->url.'sapogi-mujskie?category_id='.$id[1].'&page=shop.browse&limitstart=0&limit=10000');
-
-                    preg_match_all('#<div  style="font-size:14px; text-align:center; font-weight:bold;"><a href="/(.+?)"#sui', $text, $items);
-                    foreach($items[1] as $item_url)
-                        $collection_item->items[] = $this->parseItem($this->shopBaseUrl.$item_url);
-                    
-                }
-                
             }
     
             $base[] = $collection_item;

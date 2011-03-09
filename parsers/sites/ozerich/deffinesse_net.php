@@ -68,13 +68,15 @@ class ISP_deffinesse_net extends ItemsSiteParser_Ozerich
                            $item->images[] = $this->loadImage($image);
 
                     preg_match('#<span id="mthingSpan" class="jcarousel-skin-tango">(.+?)</span>#sui', $text, $images_text);
-                    preg_match_all('#<a href="(.+?)"#sui', $images_text[1], $images);
-                    foreach($images[1] as $image)
-                        if(mb_strpos($image, "resize_jpg") !== false)
-                           $item->images[] = $this->loadImage(mb_substr($image, mb_strpos($image, "image=") + 6));
-                        else
-                           $item->images[] = $this->loadImage($image);
-
+                    if($images_text)
+                    {
+                        preg_match_all('#<a href="(.+?)"#sui', $images_text[1], $images);
+                        foreach($images[1] as $image)
+                            if(mb_strpos($image, "resize_jpg") !== false)
+                                $item->images[] = $this->loadImage(mb_substr($image, mb_strpos($image, "image=") + 6));
+                            else
+                                $item->images[] = $this->loadImage($image);
+                    }
                     $collection->items[] = $item;
                 }
             }

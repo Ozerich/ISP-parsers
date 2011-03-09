@@ -68,40 +68,39 @@ abstract class ItemsSiteParser_Ozerich extends ItemsSiteParser
 	
 	public function date_to_str($date)
 	{
-        if(mb_strpos($date, " ") !== false)
-        {
-        while(strpos($date, "  ") !== false)
-			$date = str_replace("  ", " ", $date);
-		$items = explode(" ", $date);
-		if(count($items) >= 2)
-		{
-			$day = $items[0];
-            $month = -1;
-            foreach($this->month_names as $month_names_elem)
-            {
-                $found = false;
-                foreach($month_names_elem as $ind=>$name)
-                    if(trim(mb_strtoupper($items[1])) == mb_strtoupper($name))
-                    {
-                        $month = $ind + 1;
-                        $found = true;
-                        break;
-                    }
-                if($found)break;
-            }
-            if($month == -1)
-                $month = $items[1];
-			$today = getdate(time());
-			$today_month = $today['mon'];
-			$today_year = $today['year'];
-			
-			$year = ($today_month < $month) ? $today_year - 1 : $today_year;
-			
+        if(preg_match('#\d+\.\d+\.\d+#sui', $date, $a))
+            return $date;
+        if (mb_strpos($date, " ") !== false) {
+            while (strpos($date, "  ") !== false)
+                $date = str_replace("  ", " ", $date);
+            $items = explode(" ", $date);
+            if (count($items) >= 2) {
+                $day = $items[0];
+                $month = -1;
+                foreach ($this->month_names as $month_names_elem)
+                {
+                    $found = false;
+                    foreach ($month_names_elem as $ind => $name)
+                        if (trim(mb_strtoupper($items[1])) == mb_strtoupper($name)) {
+                            $month = $ind + 1;
+                            $found = true;
+                            break;
+                        }
+                    if ($found) break;
+                }
+                if ($month == -1)
+                    $month = $items[1];
+                $today = getdate(time());
+                $today_month = $today['mon'];
+                $today_year = $today['year'];
 
-		}
-		if(count($items) >= 3)
-			$year = $items[2];
-		return $day.".".$month.".".$year;
+                $year = ($today_month < $month) ? $today_year - 1 : $today_year;
+
+
+            }
+            if (count($items) >= 3)
+                $year = $items[2];
+            return $day . "." . $month . "." . $year;
         }
 	}
 	
@@ -127,9 +126,10 @@ abstract class ItemsSiteParser_Ozerich extends ItemsSiteParser
                 || mb_strpos($text, ";м ") !== false  || mb_strpos($text, "метро") !== false) || mb_strpos($text, ",м.") !== false
                 || mb_strpos($text, " м.") !== false || mb_strpos($text, ";м.") !== false || mb_substr($text,0,2) == "м."
                 || mb_strpos($text, "ст.м.") !== false;
-		
+
 		while($metro_exist)
 		{
+
 			preg_match_all('#((?:(?:ст\.м|м|метро)(?:\.|\s)[^,\.]+)(?:,|\.|$))#sui', $text, $metro, PREG_SET_ORDER);
 
             for($i = 0; $i < count($metro); $i++)
@@ -270,7 +270,6 @@ abstract class ItemsSiteParser_Ozerich extends ItemsSiteParser
                 $first = mb_strtolower(mb_substr($address, 0, mb_strpos($address, ',')));
             }
         }
-
 
         return $this->address($address);
     }

@@ -58,13 +58,20 @@ preg_match('#<td valign="top" style="padding-left:30px">\s*<b>(.+?)</b>#sui', $t
                     preg_match('#<table width="100%" border="0" cellspacing="0" cellpadding="0">(.+?)</table>#sui', $text, $image_text);
                     preg_match('#<img src="/(.+?)"#sui', $image_text[1], $image);
                     $image = $this->loadImage($this->shopBaseUrl.$image[1]);
-                    $item->images[] = $image;
-                    $images_hash = array($image->id);
+                    $images_hash   = array();
+                    if($image != null)
+                    {
+                        $item->images[] = $image;
+                        $images_hash[] = $image->id;
+                    }
+
 
                     preg_match_all("#document.getElementById\('mainImg'\).src='/(.+?)'#sui", $text, $images);
                     foreach($images[1] as $image)
                     {
                         $image = $this->loadImage($this->shopBaseUrl.$image);
+                        if(!$image)
+                            continue;
                         if(in_array($image->id, $images_hash))continue;
                         $images_hash[] = $image->id;
                         $item->images[] = $image;
@@ -128,24 +135,29 @@ preg_match('#<td valign="top" style="padding-left:30px">\s*<b>(.+?)</b>#sui', $t
                     if(!$descr)preg_match('#<p>(.+?)</p>#sui', $text, $descr);
                     if($descr)$item->descr = $this->txt($descr[1]);
 
-
+                    $images_hash = array();
                     preg_match('#<div class="detail_card">(.+?)<span#sui', $text, $image_text);
                     preg_match('#<img src="/(.+?)"#sui', $image_text[1], $image);
                     $image = $this->loadImage($this->shopBaseUrl.$image[1]);
-                    $item->images[] = $image;
-                    $images_hash = array($image->id);
+                    if($image)
+                    {
+                        $item->images[] = $image;
+                        $images_hash[] = $image->id;
+                    }
+
 
                     preg_match_all("#document.getElementById\('mainImg'\).src='/(.+?)'#sui", $text, $images);
                     foreach($images[1] as $image)
                     {
                         $image = $this->loadImage($this->shopBaseUrl.$image);
+                        if($image)
+                            continue;
                         if(in_array($image->id, $images_hash))continue;
                         $images_hash[] = $image->id;
                         $item->images[] = $image;
                     }
 
                     $item->name = trim(str_replace($item->articul, '',$item->name));
-             //   print_r($item);exit();
                     return $item;
     }
 

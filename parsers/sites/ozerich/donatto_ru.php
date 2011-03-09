@@ -62,10 +62,13 @@ class ISP_donatto_ru extends ItemsSiteParser_Ozerich
         $this->add_address_prefix("ЦУМ");
 
         $text = $this->httpClient->getUrlText($this->shopBaseUrl."shops/");
-        preg_match_all('#<div style="float:left;display:none"><a href="/(.+?)">(.+?)</a></div>#sui', $text, $cities, PREG_SET_ORDER);
+        preg_match_all('#<div style="float:left;display:(?:none|block)"><a href="/(.+?)">(.+?)</a></div>#sui', $text, $cities, PREG_SET_ORDER);
+
         foreach($cities as $city)
         {
             $city_name = $city[2];
+            if($city[1] == 'shops//')
+                continue;
             $text = $this->httpClient->getUrlText($this->urlencode_partial($this->shopBaseUrl.$city[1]));
 
             preg_match_all('#<div class="shop_address">(.+?)</div>#sui', $text, $shops);
@@ -73,10 +76,12 @@ class ISP_donatto_ru extends ItemsSiteParser_Ozerich
             {
                 $shop = new ParserPhysical();
 
-                preg_match('#<span>(.+?)</span>#sui', $text, $phone);
-                if($phone)
+                preg_match_all('#<span>(.+?)</span>#sui', $text, $phones, PREG_SET_ORDER);
+                for($i = 0; $i < count($phones); $i++)
                 {
-                    $shop->phone = $this->txt($phone[1]);
+                    $phone = $phones[$i];
+                    $cur = $this->txt($phone[1]);
+                    $shop->phone .= ($shop->phone != '') ? ", ".$cur : $cur;
                     $text = str_replace($phone[0], '', $text);
                 }
                 
@@ -86,6 +91,12 @@ class ISP_donatto_ru extends ItemsSiteParser_Ozerich
                 $shop->address = str_replace('" Аврора"','"Аврора"', $shop->address);
                 $shop->address = str_replace('" ', '",',$shop->address);
 
+                if(mb_strpos($shop->address,"ДИСКОНТ") !== false)
+                {
+                    $shop->address = mb_substr($shop->address, 18);
+                    $shop->b_stock = 1;
+                }
+                $shop->address = $this->address($shop->address);
                 $shop->address = $this->fix_address($shop->address);
 
                 $shop->address = str_replace("II очередь, ",'',$shop->address);
