@@ -150,7 +150,7 @@ preg_match('#<td valign="top" style="padding-left:30px">\s*<b>(.+?)</b>#sui', $t
                     foreach($images[1] as $image)
                     {
                         $image = $this->loadImage($this->shopBaseUrl.$image);
-                        if($image)
+                        if(!$image)
                             continue;
                         if(in_array($image->id, $images_hash))continue;
                         $images_hash[] = $image->id;
@@ -264,11 +264,18 @@ preg_match('#<td valign="top" style="padding-left:30px">\s*<b>(.+?)</b>#sui', $t
             }
         }
 
-        
-        foreach($collections as $collecion_name=>$urls)
+        foreach($collections as $collection_name=>$urls)
         {
             $collection = new ParserCollection();
-            $collection->name = $collecion_name;
+            $collection->name = $collection_name;
+            $collection->url = $urls[0];
+
+            preg_match('#COLLECTION_ID=(\d+)#sui', $collection->url, $col_id);
+            preg_match('#TYPE_ID=(\d+)#sui', $collection->url, $type_id);
+
+            $collection->id = $col_id[1];
+            if($type_id)
+                $collection->id .= "_".$type_id[1];
 
             foreach($urls as $url)
             {
@@ -280,10 +287,18 @@ preg_match('#<td valign="top" style="padding-left:30px">\s*<b>(.+?)</b>#sui', $t
             $base[] = $collection;
         }
 
-        foreach($child_collections as $collecion_name=>$urls)
+        foreach($child_collections as $collection_name=>$urls)
         {
             $collection = new ParserCollection();
-            $collection->name = $collecion_name;
+            $collection->name = $collection_name;
+            $collection->url = $urls[0];
+
+            preg_match('#COLLECTION_ID=(\d+)#sui', $collection->url, $col_id);
+            preg_match('#TYPE_ID=(\d+)#sui', $collection->url, $type_id);
+
+            $collection->id = $col_id[1];
+            if($type_id)
+                $collection->id .= "_".$type_id[1];
 
             foreach($urls as $url)
             {

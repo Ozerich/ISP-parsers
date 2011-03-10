@@ -26,8 +26,9 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
         preg_match('#<div style="text-align: center;">\s*<h1>(.+?)</h1>#sui', $text, $name);
         $item->name = $this->txt($name[1]);
 
-        preg_match('#product_id=(\d+)#sui', $text, $id);
+        preg_match('#product_id=(\d+)#sui', $url, $id);
         $item->id = $id[1];
+
 
         preg_match('#<span style="color:\#f0f0f0;" class="productPrice">.+?:\s*(.+?)\.#sui', $text, $price);
         if($price)$item->price = str_replace(' ','',$price[1]);
@@ -52,7 +53,7 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
         preg_match('#<b>(?:Страна|Производство|Производитель):</b>(.+?)<br(?: /)*>#sui', $text, $made_in);
         if($made_in)$item->made_in = $this->txt($made_in[1]);
 
-        preg_match('#<b>Цвет:*</b>(.+?)<br(?: /)*>#sui', $text, $color);
+        preg_match('#<b>Цвет:</b>(.+?)<br(?: /)*>#sui', $text, $color);
         if(!$color)preg_match('#<b>Расцветки:</b>(.+?)<br(?: /)*>#sui', $text, $color);
         if($color)
         {
@@ -75,6 +76,13 @@ class ISP_new_j_ru extends ItemsSiteParser_Ozerich
 
         preg_match('#<strong>Артикул:</strong>.+?<br>(.+?)<strong>Производители:</strong>#sui', $text, $descr);
         if($descr)$item->descr = $this->txt($descr[1]);
+
+        if(mb_strpos($item->descr, "Артикул"))
+            $item->descr = mb_substr($item->descr, 0, mb_strpos($item->descr, 'Артикул'));
+
+        preg_match('#<strong>Производители:</strong>(.+?)<br\s*/>#sui', $text, $brands);
+        $item->brand = mb_substr($this->txt($brands[1]), 2, -2);
+
 
         return $item;
     }

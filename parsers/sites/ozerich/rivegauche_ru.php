@@ -83,26 +83,52 @@ class ISP_rivegauche_ru extends ItemsSiteParser_Ozerich
 	{
 		$base = array();
 
-        $url = $this->shopBaseUrl."news/";
+        $urls = array("news/", "news/new/");
+        foreach ($urls as $url)
+        {
+
+            $url = $this->shopBaseUrl . $url;
+            $text = $this->httpClient->getUrlText($url);
+
+            preg_match_all('#<td class="news">\s*<a\s*href="/*(.+?)/".+?>(.+?)</a>\s*<p>(.+?)</p>\s*</td>\s*<td class="date">\s*<div class="day">(\d+)</div>\s*<div class="month".+?>(.+?)</div>#sui', $text, $news, PREG_SET_ORDER);
+            foreach ($news as $news_value)
+            {
+                $news_item = new ParserNews();
+
+                $news_item->id = mb_substr($news_value[1], mb_strrpos($news_value[1], "/") + 1);
+                $news_item->urlShort = $url;
+                $news_item->urlFull = $this->shopBaseUrl . $news_value[1] . "/";
+                $news_item->header = $this->txt($news_value[2]);
+                $news_item->contentShort = $news_value[3];
+                $news_item->date = $this->date_to_str($news_value[4] . " " . $news_value[5]);
+
+                $text = $this->httpClient->getUrlText($news_item->urlFull);
+                preg_match('#<div class="newsPormotionalImage" style="text-align: left;">.+?</div>(.+?)<div style="margin-bottom:\d+px"><#sui', $text, $content);
+                if ($content)
+                    $news_item->contentFull = $content[1];
+
+                $base[] = $news_item;
+            }
+        }
+
+        $url = $this->shopBaseUrl."news/presents/";
         $text = $this->httpClient->getUrlText($url);
 
-        preg_match_all('#<td class="news">\s*<a  href="/(.+?)/".+?>(.+?)</a>\s*<p>(.+?)</p>\s*</td>\s*<td class="date">\s*<div class="day">(\d+)</div>\s*<div class="month".+?>(.+?)</div>#sui', $text, $news, PREG_SET_ORDER);
-
+        preg_match_all('#<div class="message"><a href="/(.+?)".+?>(.+?)</a></div>#sui', $text, $news, PREG_SET_ORDER);
         foreach($news as $news_value)
         {
             $news_item = new ParserNews();
 
-            $news_item->id = mb_substr($news_value[1], mb_strrpos($news_value[1], "/") + 1);
-            $news_item->urlShort = $url;
-            $news_item->urlFull = $this->shopBaseUrl.$news_value[1]."/";
+            $news_item->contentShort = $news_value[2];
             $news_item->header = $this->txt($news_value[2]);
-            $news_item->contentShort = $news_value[3];
-            $news_item->date = $this->date_to_str($news_value[4]." ".$news_value[5]);
+            $news_item->urlShort = $url;
+            $news_item->urlFull = $this->shopBaseUrl.$news_value[1];
+            preg_match("#/([^/]+?)/[^/]+?$#sui", $news_item->urlFull, $id);
+            $news_item->id = $id[1];
 
-            $text = $this->httpClient->getUrlText($news_item->urlFull);
-            preg_match('#<div class="newsPormotionalImage" style="text-align: left;">.+?</div>(.+?)<div style="margin-bottom:\d+px"><#sui', $text, $content);
-            if($content)
-                $news_item->contentFull = $content[1];
+            preg_match('#(.+?)-(.+?)-(.+?)$#sui', $news_item->id, $info);
+            $news_item->date = "1.".$info[2].".".$info[1];
+            $news_item->id = $info[3];
 
             $base[] = $news_item;
         }

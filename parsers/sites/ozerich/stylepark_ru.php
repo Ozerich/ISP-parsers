@@ -10,23 +10,23 @@ class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
     {
         parent::__construct($savePath);
         $this->httpClient->setRequestsPause (1);
+        $this->httpClient->setIgnoreBadCodes();
 
     }
 
-	public function loadItems () 
-	{
-		$base = array();
+    public function loadItems()
+    {
+        $base = array();
 
         $text = $this->httpClient->getUrlText($this->shopBaseUrl);
         preg_match_all('#<li.*?><a href="/(set_gender/(\d+)/)".+?>(.+?)</a></li>#sui', $text, $collections, PREG_SET_ORDER);
+        $this->httpClient->getUrlText("http://www.s-t-p.ru/bitrix/ajax/CatalogConf.php?action=setonpage&value=6000", null, false);
 
-        $this->httpClient->getUrlText($this->shopBaseUrl."bitrix/ajax/CatalogConf.php?action=setonpage&value=6000");
-        
-        foreach($collections as $collection_value)
+        foreach ($collections as $collection_value)
         {
             $collection_item = new ParserCollection();
 
-            $collection_item->url = $this->shopBaseUrl.$collection_value[1];
+            $collection_item->url = $this->shopBaseUrl . $collection_value[1];
             $collection_item->id = $collection_value[2];
             $collection_item->name = $collection_value[3];
 
@@ -34,82 +34,96 @@ class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
             preg_match('#<div class="list_menu">(.+?)</div>#sui', $text, $text);
             preg_match_all('#<li class="">\s*<a href="/(.+?)">(.+?)<.+?<ul class="root-item">(.+?)</ul>#sui', $text[1], $categories, PREG_SET_ORDER);
 
-            foreach($categories as $category)
+            foreach ($categories as $category)
             {
                 $category_name = $category[2];
 
-                $text = $this->httpClient->getUrlText($this->shopBaseUrl.$category[1]);
-                preg_match('#</p>\s*<ul>.+?<ul class="root-item">(.+?)</ul></li>#sui', $text, $text);
+                $text = $this->httpClient->getUrlText($this->shopBaseUrl . $category[1]);
+                preg_match("#<div class='list_menu'>(.+)#sui", $text, $text);
+                preg_match('#<li class="active">.+?<ul class="root-item">(.+?)</ul>#sui', $text[1], $text);
                 preg_match_all('#<a href="/(.+?)">(.+?)<#sui', $text[1], $sub_categories, PREG_SET_ORDER);
-                foreach($sub_categories as $sub_category)
+                foreach ($sub_categories as $sub_category)
                 {
                     $categ = array($category_name, $sub_category[2]);
-                    $text = $this->httpClient->getUrlText($this->shopBaseUrl.$sub_category[1]);
-
-                    preg_match_all('#<td class="element">(.+?)</td>#sui', $text, $texts);
-                    foreach($texts[1] as $text)
+                    $url = $sub_category[1];
+                    while ($url != "")
                     {
-                        preg_match('#<div class="name">\s*<a href="/(.+?)/" title="">(.+?)</a>.+?<div class="price">(.+?)\.#sui', $text, $info);
-                        $item = new ParserItem();
-        
-                        $item->id = mb_substr($info[1], mb_strrpos($info[1], "-") + 1);
-                        $item->url = $this->shopBaseUrl.$info[1]."/";
-                        $item->name = $this->txt($info[2]);
-                        $item->categ = $categ;
-                        $item->price = str_replace(" ", "", $this->txt($info[3]));
-
-                        $text = $this->httpClient->getUrlText($item->url);
-
-                        preg_match('#<span class="articul">Артикул:(.+?)</span>#sui', $text, $articul);
-                        $item->articul = $this->txt($articul[1]);
-
-                        preg_match('#<p> Бренд:(.+?)</p>#sui', $text, $brand);
-                        if($brand)$item->brand = $this->txt($brand[1]);
-
-                        preg_match('#<p>\s*Состав:(.+?)</p>#sui', $text, $structure);
-                        if($structure)$item->structure = $this->txt($structure[1]);
-
-                        preg_match_all('#<div class="chooseSize">\s*<a.+?>(.+?)</a>#sui', $text, $sizes);
-                        if($sizes)
-                            foreach($sizes[1] as $size)
-                                $item->sizes[] = $this->txt($size);
-
-                        preg_match('#select id="Id_Cvet"(.+?)</select>#sui', $text, $colors);
-
-                       
-                        if($colors)
+                        $base_text = $this->httpClient->getUrlText($this->shopBaseUrl . $url);
+                        preg_match('#<a class="page_next" href="/(.+?)"#sui', $base_text, $next);
+                        $url = ($next) ? $this->txt($next[1]) : "";
+                        if ($url) continue;
+                        preg_match_all('#<td class="element">(.+?)</td>#sui', $base_text, $texts);
+                        foreach ($texts[1] as $text)
                         {
-                            preg_match_all('#<option value=".+?">(.+?)</option>#sui', $colors[1], $colors);
-                            for($i = 1; $i < count($colors[1]); $i++)
-                                $item->colors[] = $this->txt(mb_substr($colors[1][$i],0,mb_strpos($colors[1][$i], "(")));
-                        }
+                            preg_match('#<div class="name">\s*<a href="/(.+?)/" title="">(.+?)</a>.+?<div class="price">(.+?)\.#sui', $text, $info);
+                            $item = new ParserItem();
 
-                        preg_match('#<div class="element_mini_text">(.+?)</div>\s*</div>#sui', $text, $descr);
-                        $item->descr = $this->txt($descr[1]);
+                            $item->id = mb_substr($info[1], mb_strrpos($info[1], "-") + 1);
+                            $item->url = $this->shopBaseUrl . $info[1] . "/";
+                            $item->name = $this->txt($info[2]);
+                            $item->categ = $categ;
+                            $item->price = str_replace(" ", "", $this->txt($info[3]));
 
-                        preg_match('#<div class="zoom-desc">(.+?)</div>#sui', $text, $image_text);
-                        if($image_text)
-                        {
-                            preg_match_all('#<a href="/(.+?)"#sui', $image_text[1], $images);
-                            foreach($images[1] as $image)
-                                if(mb_strpos($image, "noimage") === false)
-                                    $item->images[] = $this->loadImage($this->shopBaseUrl.$image);
+                            $text = $this->httpClient->getUrlText($item->url);
+
+                            preg_match('#<span class="articul">Артикул:(.+?)</span>#sui', $text, $articul);
+                            $item->articul = $this->txt($articul[1]);
+
+                            preg_match('#<p> Бренд:(.+?)</p>#sui', $text, $brand);
+                            if ($brand) $item->brand = $this->txt($brand[1]);
+
+                            preg_match('#<p>\s*Состав:(.+?)</p>#sui', $text, $structure);
+                            if ($structure) $item->structure = $this->txt($structure[1]);
+
+                            preg_match_all('#<div class="chooseSize">\s*<a.+?>(.+?)</a>#sui', $text, $sizes);
+                            if ($sizes)
+                                foreach ($sizes[1] as $size)
+                                    $item->sizes[] = $this->txt($size);
+
+                            preg_match('#select id="Id_Cvet"(.+?)</select>#sui', $text, $colors);
+
+
+                            if ($colors) {
+                                preg_match_all('#<option value=".+?">(.+?)</option>#sui', $colors[1], $colors);
+                                for ($i = 1; $i < count($colors[1]); $i++)
+                                    $item->colors[] = $this->txt(mb_substr($colors[1][$i], 0, mb_strpos($colors[1][$i], "(")));
+                            }
+
+                            preg_match('#<div class="element_mini_text">(.+?)</div>\s*</div>#sui', $text, $descr);
+                            $item->descr = $this->txt($descr[1]);
+
+                            preg_match('#<div class="zoom-desc">(.+?)</div>#sui', $text, $image_text);
+                            if ($image_text) {
+                                preg_match_all('#<a href="/(.+?)"#sui', $image_text[1], $images);
+                                foreach ($images[1] as $image)
+                                    if (mb_strpos($image, "noimage") === false)
+                                        $item->images[] = $this->loadImage($this->shopBaseUrl . $image);
+                            }
+                            else
+                            {
+                                preg_match('#<div class="zoom-small-image" style="position:relative; z-index:1;">\s*<a href="/(.+?)"#sui',
+                                           $text, $image_url);
+                                if ($image_url)
+                                    $item->images[] = $this->loadImage($this->shopBaseUrl . $image_url[1]);
+                            }
+
+                            $collection_item->items[] = $item;
                         }
-                        $collection_item->items[] = $item;
                     }
+
+
                 }
             }
-            
-            
+
 
             $base[] = $collection_item;
         }
 
-		
-		return $this->saveItemsResult ($base);
-	}
-	
-	public function loadPhysicalPoints () 
+
+        return $this->saveItemsResult($base);
+    }
+
+    public function loadPhysicalPoints ()
 	{
 		$base = array ();
 

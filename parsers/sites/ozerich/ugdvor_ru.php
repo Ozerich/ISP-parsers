@@ -50,7 +50,7 @@ class ISP_ugdvor_ru extends ItemsSiteParser_Ozerich
             
                     preg_match('#src="(.+?)"#sui', $item_value[1], $image);
                     if($image)
-                        $item->images[] = $this->loadImage(str_replace('tc','ic',$image[1]));
+                       $item->images[] = $this->loadImage(str_replace('tc','ic',$image[1]));
 
                     preg_match('#Код: (\d+)$#sui', $item->name, $articul);
                     if($articul)
