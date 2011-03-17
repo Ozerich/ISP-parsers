@@ -84,6 +84,14 @@ $allParsers = array
 	'73'	=> new ParserExecuteInfo ('ozerich/savage_ru.php', 		'ISP_savage_ru'),
 	'74'	=> new ParserExecuteInfo ('ozerich/consul_ru.php', 		'ISP_consul_ru'),
 	'75'	=> new ParserExecuteInfo ('ozerich/eromoda_ru.php', 		'ISP_eromoda_ru'),
+    
+	'76'	=> new ParserExecuteInfo ('ozerich/accessorize_ru.php', 		'ISP_accessorize_ru'),
+	'77'	=> new ParserExecuteInfo ('ozerich/baon_ru.php', 		'ISP_baon_ru'),
+	'78'	=> new ParserExecuteInfo ('ozerich/f5jeans_ru.php', 		'ISP_f5jeans_ru'),
+	'79'	=> new ParserExecuteInfo ('ozerich/grostyle_ru.php', 		'ISP_grostyle_ru'),
+	'80'	=> new ParserExecuteInfo ('ozerich/incanto_ru.php', 		'ISP_incanto_ru'),
+	'81'	=> new ParserExecuteInfo ('ozerich/serge-fashion_ru.php', 		'ISP_serge-fashion_ru'),
+	'82'	=> new ParserExecuteInfo ('ozerich/tervolina_ru.php', 		'ISP_tervolina_ru'),
 
 
     
