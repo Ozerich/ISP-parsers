@@ -9,7 +9,7 @@ class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
     public function __construct($savePath)
     {
         parent::__construct($savePath);
-        $this->httpClient->setRequestsPause (1);
+        $this->httpClient->setRequestsPause (2);
         $this->httpClient->setIgnoreBadCodes();
 
     }
@@ -32,7 +32,7 @@ class ISP_stylepark_ru extends ItemsSiteParser_Ozerich
 
             $text = $this->httpClient->getUrlText($collection_item->url);
             preg_match('#<div class="list_menu">(.+?)</div>#sui', $text, $text);
-            preg_match_all('#<li class="">\s*<a href="/(.+?)">(.+?)<.+?<ul class="root-item">(.+?)</ul>#sui', $text[1], $categories, PREG_SET_ORDER);
+            preg_match_all('#<li class="">\s*<a href="/(.+?)">(.+?)<.  +?<ul class="root-item">(.+?)</ul>#sui', $text[1], $categories, PREG_SET_ORDER);
 
             foreach ($categories as $category)
             {

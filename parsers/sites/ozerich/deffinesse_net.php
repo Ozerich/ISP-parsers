@@ -57,15 +57,21 @@ class ISP_deffinesse_net extends ItemsSiteParser_Ozerich
                     $item->structure = $this->txt(str_replace('Данные не доступны.','',$structure[1]));
 
                      preg_match('#<img id="largeImg".+?src="(.+?)"#sui', $text, $image);
-                    $item->images[] = $this->loadImage($image[1]);
+                    $image = $this->loadImage($image[1]);
+					if($image)
+						$item->images[] = $image;
 
                    preg_match('#<ul id="mycarousel" class="jcarousel-skin-tango">(.+?)</ul>#sui', $text, $images_text);
                     preg_match_all('#<a href="(.+?)"#sui', $images_text[1], $images);
                     foreach($images[1] as $image)
+					{
                         if(mb_strpos($image, "resize_jpg") !== false)
-                           $item->images[] = $this->loadImage(mb_substr($image, mb_strpos($image, "image=") + 6));
+                           $image = $this->loadImage(mb_substr($image, mb_strpos($image, "image=") + 6));
                         else
-                           $item->images[] = $this->loadImage($image);
+                           $image = $this->loadImage($image);
+						if($image)
+							$item->images[] = $image;
+					}
 
                     preg_match('#<span id="mthingSpan" class="jcarousel-skin-tango">(.+?)</span>#sui', $text, $images_text);
                     if($images_text)
