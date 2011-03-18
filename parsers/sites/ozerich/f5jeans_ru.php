@@ -1,7 +1,7 @@
 <?php
 
 /* Подключаем личный класс для операций по скачивания страниц: */
-require_once PARSERS_BASE_DIR . '/parsers/baseClasses/drakon.php';
+require_once PARSERS_BASE_DIR . '/parsers/baseClasses/ozerich.php';
 require_once PARSERS_BASE_DIR . '/parsers/addons/phpQuery.php';
 
 
@@ -12,9 +12,9 @@ require_once PARSERS_BASE_DIR . '/parsers/addons/phpQuery.php';
  * 		loadPhysicalPoints - парсинг торговых точек
  * 		loadNews - парсинг торговых точек
  */
-class ISP_f5jeans_ru extends ItemsSiteParser_Drakon
+class ISP_f5jeans_ru extends ItemsSiteParser_Ozerich
 {
-	protected $shopBaseUrl = 'http://f5jeans.ru'; // Адрес главной страницы сайта 
+	protected $shopBaseUrl = 'http://f5jeans.ru/'; // Адрес главной страницы сайта 
 	protected $catalogUrl = 'http://f5jeans.ru/catalog2010/';
 	
 	function parseF5jeansGoodsPage ($url, $itemId, $catalogUrl)
@@ -139,6 +139,7 @@ class ISP_f5jeans_ru extends ItemsSiteParser_Drakon
 	
 	public function loadItems () 
 	{
+        return null;
 		$base = array ();
 		
 		//$this->httpClient->getUrlText ('http://f5jeans.ru/', null, false);
@@ -219,69 +220,41 @@ class ISP_f5jeans_ru extends ItemsSiteParser_Drakon
 	
 	public function loadPhysicalPoints () 
 	{
+        $metros = array('Академическая / Тульская','Алтуфьево','Водный стадион','Проспект Мира','Фили / Багратионовская', 'Теплый стан');
 		$base = array ();
-		
-		$url = 'http://f5jeans.ru/buy/';
-		$russiaShops = $this->httpClient->getUrlText ($url);
-		
-		$document=phpQuery::newDocument($russiaShops);
-		
-		$content=$document->find('.grid_10 > .content');
-		if ($content=="") $this->parseError ("Can't parse PhysicalPoints content\n");
-		
-		$replace1=array("м. Академическая / Тульская, ", "м. Алтуфьево ", "м. Водный стадион ", "м. Проспект Мира ", "м. Теплый Стан, ", "м. Фили / Багратионовская, ", "\"F5\", ", "\"F5\"", "F5", "\"Мульти\", ", "\"мульти\", ", "\"999\", ");
-		
-		for ($i=0;$i<=1;$i++)
-		{
-			$head=pq($content)->find('strong:eq('.$i.')')->text();
-			if ($head=="") $this->parseError ("Can't parse PhysicalPoints head\n");
-			$tableAllTr=pq($content)->find('table:eq('.$i.') > tbody > tr');	
-			if ($tableAllTr=="") $this->parseError ("Can't parse PhysicalPoints tables\n");
-			foreach ($tableAllTr as $tr)
-			{
-				$city=pq($tr)->find('.h_city')->text();
-				if ($city=="") $this->parseError ("Can't parse PhysicalPoints city\n");
-				$city=trim(str_replace('г.','',$city));
-				$city=str_replace(' -','-',$city);
-				
-				$address=trim(pq($tr)->find('.h_addr')->text());
-				if ($address=="") $this->parseError ("Can't parse PhysicalPoints address\n");
-				$address = preg_replace("|[\s]+|s", " ", trim($address));
-				$address = str_replace(" ,", ",", $address);
-				$address = preg_replace("|,([А-Яа-я])|", ", \\1", $address);
-				$address = preg_replace("|ул\.([А-Я])|", "ул. \\1", $address);
-				
-				//удаление метро
-				//$address = preg_replace("|м\.?\s?[-А-Яа-я\s\/]+,|", "", $address);
-				$address = trim(str_ireplace($replace1, "", $address));
-				
-				if (preg_match("/^(ТЦ|ТРЦ)/",$address,$a))
-				{
-					if (strpos($address,"ул.")!==false)
-						$address = preg_replace("#(.+)(ул\..+)#", "\\2, \\1", $address);	
-					else if (strpos($address,"пр-т")!==false)
-						$address = preg_replace("#^(ТЦ|ТРЦ)(.+), ([А-Я][^\s]+ пр\-т.+)#", "\\3, \\1\\2", $address);
-				}
-				
-				$length=strlen($address);
-				if ($address{$length-1}=="." || $address{$length-1}==",")
-					$address = substr($address, 0, $length-1);
-				
-				$phone=trim(pq($tr)->find('.h_phone')->text());
-				//if ($phone=="") $this->parseError ("Can't parse PhysicalPoints phone\n");
-							
-				$phys = new ParserPhysical();
-				$phys->id 		 = '';
-				$phys->city 	 = $city;
-				$phys->address   = $address;
-				$phys->phone     = $phone;
-				if (strpos($address, "исконт")!==false) $phys->b_stock = 1;
-				$phys->timetable = '';
-				$base[] = $phys;
-			}
-		}
-				
-		return $this->savePhysicalResult ($base);
+
+		$text = $this->httpClient->getUrlText($this->shopBaseUrl."buy/");
+        preg_match_all('#<tr><td style="padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; font-size: 85%; ">(.+?)</tr>#sui', $text, $shops);
+        
+        foreach($shops[1] as $shop_text)
+        {
+            preg_match('#<strong>(.+?)</strong>(.+?)</td><td style="padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; font-size: 85%; ">(.+?)</td>#sui', $shop_text, $info);
+
+            $shop = new ParserPhysical();
+
+            $shop->city = $this->txt($info[1]);
+            $shop->address = $this->txt(mb_substr($info[2],2));
+            $shop->phone = $this->txt($info[3]);
+
+            foreach($metros as $metro)
+                $shop->address = str_replace('м. '.$metro, '', $shop->address);
+            $shop->address = $this->address($shop->address);
+            if(mb_substr($shop->address, 0, 4) == '"F5"')
+                $shop->address = mb_substr($shop->address, 5);
+            if(mb_substr($shop->address, 0, 5) == '"999"')
+                $shop->address = mb_substr($shop->address, 6);
+            $shop->address = str_replace(array('ТРЦ Кит','"Мульти"'),array('ТРЦ Кит,',''),$shop->address);
+            $shop->address = $this->fix_address($shop->address);
+            $shop->address = $this->address($shop->address);
+            if(mb_substr($shop->address, 0, 2) == 'F5')
+                $shop->address = mb_substr($shop->address, 3);
+            if(ord($shop->address[0]) == 194)
+                $shop->address = mb_substr($shop->address, 1);
+            $shop->address = trim($shop->address);
+            $base[] = $shop;
+        }
+
+        return $this->savePhysicalResult ($base);
 	}
 	
 	public function loadNews ()
