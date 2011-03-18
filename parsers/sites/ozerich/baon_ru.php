@@ -2,7 +2,6 @@
 
 /* Подключаем личный класс для операций по скачивания страниц: */
 require_once PARSERS_BASE_DIR . '/parsers/baseClasses/ozerich.php';
-require_once PARSERS_BASE_DIR . '/parsers/addons/phpQuery.php';
 
 /* Для сайта baon.ru нужно создать следующий класс.
  * Сюда записывается всё, что связано с парсингом сайта baon.ru.

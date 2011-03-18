@@ -1,7 +1,7 @@
 <?php
 
 /* Подключаем личный класс для операций по скачивания страниц: */
-require_once PARSERS_BASE_DIR . '/parsers/baseClasses/drakon.php';
+require_once PARSERS_BASE_DIR . '/parsers/baseClasses/ozerich.php';
 require_once PARSERS_BASE_DIR . '/parsers/addons/phpQuery.php';
 
 /* Для сайта accessorize.ru нужно создать следующий класс.
@@ -10,9 +10,9 @@ require_once PARSERS_BASE_DIR . '/parsers/addons/phpQuery.php';
  * 		loadItems - парсинг товаров
  * 		loadPhysicalPoints - парсинг торговых точек
  */
-class ISP_accessorize_ru extends ItemsSiteParser_Drakon
+class ISP_accessorize_ru extends ItemsSiteParser_Ozerich
 {
-	protected $shopBaseUrl = 'http://accessorize.ru'; // Адрес главной страницы сайта
+	protected $shopBaseUrl = 'http://accessorize.ru/'; // Адрес главной страницы сайта
         const SITEMAP_URL = "http://accessorize.ru/monsoon/sitemap/";
         private $itemList;
         private $shopList;
@@ -25,9 +25,6 @@ class ISP_accessorize_ru extends ItemsSiteParser_Drakon
 		$news_data	= $this->httpClient->getUrlText ($short_url);
 		
 		preg_match_all('#<div[^>]*>[^<]*<p[^>]*>([\d]{2}\.[\d]{2}\.[\d]{4})</p>[^<]*<p[^>]*><strong><a href="(([^"]+)/)">([^<]*)</a></strong></p>#sui',$news_data,$news_all,PREG_SET_ORDER);
-		
-		// print_r($news_all);
-		// die();
 		
 		foreach ($news_all as $one_news)
 		{
@@ -53,62 +50,11 @@ class ISP_accessorize_ru extends ItemsSiteParser_Drakon
 		return $this->saveNewsResult ($base); /* Есть на сайте нет новостей, заменить
 			этот код на return null; */
 	}
-	
-	protected function get_month_number($name)
-	{
-		$months	= array('Январь'=>1 ,'Февраль'=>2 ,'Март'=>3,'Апрель'=>4,'Май'=>5,'Июнь'=>6,'Июль'=>7,'Август'=>8,'Сентябрь'=>9,'Октябрь'=>10,'Ноябрь'=>11,'Декабрь'=>12);
-		if (isset($months[$name]))
-			return $months[$name];
-		else
-			return 0;
-	}
-        
-        private function getSiteMap()
-        {
-            $page = $this->httpClient->getUrlText(self::SITEMAP_URL);
-
-            $results = phpQuery::newDocumentHTML($page, 'cp1251');
-            $elements = $results->find('li > a[href="/women/"]')->parent()->next("ul")->find('ul > li');
-            $i = 0;
-            foreach ($elements as $element)
-            {
-                $list['women'][$i] = pq($element)->find('a')->attr('href');
-                $i++;
-            }
-            $elements = $results->find('li > a[href="/children/"]')->parent()->next("ul")->find('ul > ul > li');
-            $i = 0;
-            foreach ($elements as $element)
-            {
-                $list['children'][$i] = pq($element)->find('a')->attr('href');
-                $i++;
-            }
-            $elements = $results->find('li > a[href="/accessorize/"]')->parent()->next("ul")->find('ul > li > a');
-            $i = 0;
-            foreach ($elements as $element)
-            {
-                $list['accessorize'][$i] = pq($element)->attr('href');
-                $i++;
-            }
-            $this->itemList = $list;
-            $elements = $results->find('li > a[href="/city/"]')->parent()->next("ul")->find('ul > li > a');
-            $i = 0;
-            $list = array();
-            print_r($elements);exit();
-            foreach ($elements as $element)
-            {
-                $city = explode("/",pq($element)->attr('href'));
-                $list[$city[2]][$i] = pq($element)->attr('href');
-                $i++;
-            }
-            $this->shopList = $list;
-        }
-
 
         function  __construct($savePath)
         {
             parent::__construct($savePath);
             $this->httpClient->setConfig (array('curloptions' => array (CURLOPT_TIMEOUT => 600)));
-            $this->getSiteMap();
         }
 
         private function getItems($items,$path)
@@ -122,6 +68,8 @@ class ISP_accessorize_ru extends ItemsSiteParser_Drakon
             }
             return $output;
         }
+
+        
 	function parseTervolinaGoodsPage ($url, $itemId,$path)
 	{
 		$page = $this->httpClient->getUrlText($url);
@@ -237,63 +185,87 @@ class ISP_accessorize_ru extends ItemsSiteParser_Drakon
     
 	public function loadItems ()
 	{
-        return null;
 		$base = array ();
-                $this->getSiteMap();
-		foreach ($this->itemList as $collName => $items)
-		{
-                        $page = $this->httpClient->getUrlText($this->shopBaseUrl."/".$collName."/");
-                        $page = phpQuery::newDocumentHTML($page, 'cp1251');
-                        $collAdd = $page->find("td.td1:first > p")->text();
-                        $collAdd = trim($collAdd);
-			$collection = new ParserCollection();
-			$collection->id   = $collName." ".$collAdd;
-			$collection->url  = $this->shopBaseUrl."/".$collName;
-			$collection->name = $collName;
-			$collection->items = $this->getItems($items,$collName);
-			$base[] = $collection;
-		}
+
+        $text = $this->httpClient->getUrlText($this->shopBaseUrl."monsoon/address/");
+        preg_match('#<td style="padding-left:10px">(.+?)</table>#sui', $text, $text);
+        preg_match_all('#<a href="/(.+?)/"><img src=".+?" border="0" alt="(.+?)"></a>#sui', $text[1], $collections, PREG_SET_ORDER);
+        foreach($collections as $collection_value)
+        {
+            $collection = new ParserCollection();
+
+            $collection->id = $collection_value[1];
+            $collection->name = $collection_value[2];
+            $collection->url = $this->shopBaseUrl.$collection_value[1].'/';
+            
+            $text = $this->httpClient->getUrlText($collection->url);
+            preg_match('#<table cellspacing="0" cellpadding="0" border="0" width="100%" class="left_menu">(.+?)</table>#sui', $text, $text);
+            preg_match_all('#href="/(.+?)"><div style="margin-right:20px">(.+?)</div>#sui', $text[1], $categories, PREG_SET_ORDER);
+            foreach($categories as $category)
+            {
+                $category_name = $this->txt($category[2]);
+                $text = $this->httpClient->getUrlText($this->shopBaseUrl.$category[1]);
+                
+                preg_match_all('#<td width="1%"><a href="/(.+?)">#sui', $text, $items);
+                foreach($items[1] as $item)
+                    $collection->items[] = $this->parseTervolinaGoodsPage($this->shopBaseUrl.$item,1,1);
+            }
+        
+            $base[] = $collection;
+        }
+
+                
 		return $this->saveItemsResult ($base);
 	}
 
     
 	public function loadPhysicalPoints ()
 	{
-		$base = array ();
+        $base = array ();
 
-		foreach ($this->shopList as $city)
-		{
-                    foreach($city as $shop)
-                    {
-                        $data = array();
-                        $url = $this->shopBaseUrl.$shop;
-			$page = $this->httpClient->getUrlText($url);
-                        $results = phpQuery::newDocumentHTML($page, 'cp1251');
-                        $data['city'] = $results->find(".crumbtrail")->find('a:last')->text();
-                        $name = $results->find(".h_content > strong")->text();
-                        $elements = $results->find("body > table > tr > td > table > tr > td > p");
-                        foreach($elements as $element)
-                        {
-                            $text = pq($element)->text();
-                            if(stristr($text, "Тел.:"))
-                            {
-                                $data['phone'] =  $text;
-                            }
-                            if(stristr($text, "Наш адрес"))
-                            {
-                                $data['address'] = trim(str_replace("Наш адрес", "", stristr($text,"Наш адрес")),":")." ".$name;
-                            }
-                            if(stristr($text, "Время работы"))
-                            {
-                                $data['timetable'] = trim(str_replace("Время работы", "", strstr($text, "Время работы")),":");
-                            }
-                        }
-        		$phys = new ParserPhysical($data);
-			$phys->id        = trim($shop,"/");
-			$base[] = $phys;
-                    }
-		}
-		return $this->savePhysicalResult ($base);
+        $text = $this->httpClient->getUrlText($this->shopBaseUrl.'monsoon/address/');
+        preg_match_all('#<td class="h_content"><strong>Вы выбрали город (.+?)</strong></td>(.+?)</table>\s*</div>#sui', $text, $cities, PREG_SET_ORDER);
+        foreach($cities as $city)
+        {
+            $city_name = $this->txt($city[1]);
+            $text = $city[2];
+            preg_match_all('#<tr.+?>(.+?)</tr>#sui', $text, $shops);
+            foreach($shops[1] as $text)
+            {
+                $shop = new ParserPhysical();
+                $shop->city = $city_name;
+
+                preg_match_all('#<td.+?>(.+?)</td>#sui', $text, $info);
+                $info = $info[1];
+                $shop->address = $this->txt($info[2]).", ".$this->txt($info[1]);
+                $shop->phone = $this->txt($info[3]);
+
+                $shop->address = $this->address($shop->address);
+                if($shop->phone == "СКОРО ОТКРЫТИЕ")
+                    continue;
+                
+                preg_match('#г\.(.+?),#sui', $shop->address, $city_preg);
+                if($city_preg)
+                {
+                    $shop->city = $this->txt($city_preg[1]);
+                    $shop->address = str_replace($city_preg[0],'',$shop->address);
+                }
+
+                if(mb_substr($shop->phone, 0, 2) == 'т.')
+                    $shop->phone = mb_substr($shop->phone, 3);
+
+                if($this->address_have_prefix($shop->address))
+                    $shop->address = mb_substr($shop->address, mb_strpos($shop->address, ',') + 2);
+                
+                $shop->address = str_replace('С-Петербург, ','',$shop->address);
+                if($shop->address == 'Галерея')
+                    continue;
+
+                $base[] = $shop;
+            }
+        }
+        
+        return $this->savePhysicalResult ($base);
 	}
 }
 
