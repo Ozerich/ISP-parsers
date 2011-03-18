@@ -15,206 +15,82 @@ require_once PARSERS_BASE_DIR . '/parsers/addons/phpQuery.php';
 class ISP_f5jeans_ru extends ItemsSiteParser_Ozerich
 {
 	protected $shopBaseUrl = 'http://f5jeans.ru/'; // Адрес главной страницы сайта 
-	protected $catalogUrl = 'http://f5jeans.ru/catalog2010/';
-	
-	function parseF5jeansGoodsPage ($url, $itemId, $catalogUrl)
-	{
-		$contentItem = $this->httpClient->getUrlText ($url);
-		$contentItem = str_replace("&nbsp;","",$contentItem);
-		$documentItem=phpQuery::newDocument($contentItem);
-	
-		//категории / иерархический путь
-		$coll=$documentItem->find('.l-nav-items > h1 > span:eq(0)');
-		if ($coll == "") $this->parseError ("Can't parse name of collection\n");
-		$collSub=$documentItem->find('.l-nav-items > h1 > span:eq(1)');
-		if ($collSub == "") $this->parseError ("Can't parse name of subcollection\n");
-		$path = array (pq($coll)->text(), pq($collSub)->text());
-		
-		$divGrid_10=$documentItem->find('.grid_10 > .bg-grey2');
-		if ($divGrid_10 == "") $this->parseError ("Can't parse el with class='bg-grey2'\n");
-		
-		//Изображение
-		$imgDiv=pq($divGrid_10)->find('.l-photo-det');
-		$imagepath=pq($imgDiv)->find('a > img')->Attr('src');
-		if ($imagepath == "") $this->parseError ("Can't parse image\n");
-		$imgUrl=$catalogUrl . $imagepath;
-								
-		pq($divGrid_10)->find('.l-photo-det')->remove();
-					
-		//артикул
-		$art=pq($divGrid_10)->find('div:first > p:eq(0)')->text();
-		if ($imagepath == "") $this->parseError ("Can't parse articul\n");
-		//категория
-		$name=mb_strtolower(pq($divGrid_10)->find('div:first > p:eq(1)')->text());
-		if ($name == "") $this->parseError ("Can't parse name\n");
-		//$name=mb_convert_encoding($name, 'UTF-8', 'CP1251');
-		//ID
-		$id=pq($divGrid_10)->find('div:first > p:eq(2)');
-		if ($id == "") $this->parseError ("Can't parse ID\n");
-		pq($id)->find('span')->remove();
-		$id=pq($id)->text();
-		//цвет
-		$color=pq($divGrid_10)->find('div:first > p:eq(3)');
-		pq($color)->find('span')->remove();
-		$color=pq($color)->text();
-		//ткань
-		$material=pq($divGrid_10)->find('div:first > p:eq(4)');
-		pq($material)->find('span')->remove();
-		$material=pq($material)->text();
-		//состав
-		$structure=pq($divGrid_10)->find('div:first > p:eq(5)');
-		pq($structure)->find('span')->remove();
-		$structure=pq($structure)->text();
-		//размеры
-		//$sizes=pq($divGrid_10)->find('div:first > .setka');
-		$sizesTrFirstTd=pq($divGrid_10)->find('div:first > .setka > tr:eq(0) > td:gt(0)');
-		
-		$hor=array();
-		foreach ($sizesTrFirstTd as $td)
-		{
-			$hor[]=pq($td)->text();
-		}	
-		$countHor=count($hor);
-		$sizesTrOthers=pq($divGrid_10)->find('div:first > .setka > tr:gt(0)');		
-		$vert=array();
-		foreach ($sizesTrOthers as $tr)
-		{
-			$v=trim(pq($tr)->find('td:eq(0)')->text());
-			if ($v!="") $vert[]=$v;
-		}
-		$countVert=count($vert);
-		
-		if ($countHor>0)
-		{
-			$sizesArr=array();
-			for ($i=0;$i<$countHor;$i++)
-			{
-				if ($countVert>0)
-					for ($j=0;$j<$countVert;$j++) {$sizesArr[]=$hor[$i].'/'.$vert[$j];}
-				else 
-					$sizesArr[]=$hor[$i];
-			}
-			//print_r($sizesArr);
-		}
-		else 
-			$sizesArr='';	
-		/*
-		echo '<br>articul: <b>'.$art.'</b><br>';
-		echo 'name: <b>'.$name.'</b><br>';
-		echo 'ID: <b>'.$id.'</b><br>';
-		echo 'color: <b>'.$color.'</b><br>';
-		echo 'material: <b>'.$material.'</b><br>';
-		echo 'structure: <b>'.$structure.'</b><br>';
-		//echo 'sizes: <br>'.$sizes.'<br>';
-		echo '<a href="'.$this->catalogUrl.$imagepath.'" target=_blank>открыть</a><br>';
-		*/
-		
-		$this->httpClient->setRequestsPause (1); 
-		
-		$itemInfo = new ParserItem ();
-		$itemInfo->id    	= $itemId;
-		$itemInfo->url   	= $url;
-		$itemInfo->name   	= $name;
-		$itemInfo->articul 	= $art;
-		$itemInfo->categ 	= $path;
-		$itemInfo->material	= $material;
-		$itemInfo->structure= $structure;
-		$itemInfo->sizes    = $sizesArr;	
-		$itemInfo->colors   = $color;
-		$itemInfo->descr='ID: '.$id;
-		
-		//	$this->parseError("Can't find image at url '$url'!");
-					
-		$this->httpClient->getUrlBinary ($imgUrl);
-		if ($this->httpClient->getLastCtype () != 'image/png')
-			$this->parseError("Content-type header not image/png at url '$imgUrl'!");
-		$image = new ParserImage();
-		$image->url = $imgUrl;
-		$image->path = $this->httpClient->getLastCacheFile();
-		$image->type = 'png';
-		$itemInfo->images[] = $image;
-		
-		return $itemInfo;
-	}
-	
+
+    private function parse_item($url, $categ)
+    {
+        $item = new ParserItem();
+
+        $item->url = $url;
+        $item->categ = $categ;
+
+        $text = $this->httpClient->getUrlText($item->url);
+
+        $item->id = mb_substr($url, mb_strrpos($url, '=') + 1);
+
+        preg_match('#<span class="grey">ID: </span>(.+?)</p>#sui', $text, $id);
+        if($id)$item->articul = $id[1];
+
+        preg_match('#<span class="grey">Состав: </span>(.+?)</p>#sui', $text, $structure);
+        if($structure)$item->structure = $this->txt($structure[1]);
+
+        preg_match('#<span class="grey">Цвет: </span>(.+?)</p>#sui', $text, $colors);
+        if($colors)$item->colors = $this->txt($colors[1]);
+
+        preg_match('#<span class="grey">Ткань: </span>(.+?)</p>#sui', $text, $material);
+        if($material)$item->material = $this->txt($material[1]);
+
+        preg_match('#<p style="font-size:12px; font-weight: bold; margin-bottom: 12px;">(.+?)</p>#sui', $text, $name);
+        if($name)$item->name = $this->txt($name[1]);
+
+        preg_match('#<a href="(img.+?)"#sui', $text, $image);
+        if($image)
+        {
+            $image = $this->loadImage($this->shopBaseUrl.'catalog/'.$image[1]);
+            if($image)
+                $item->images[] = $image;
+        }
+
+        preg_match('#<p style="font-size:11px; font-weight: bold;">(.+?)<p>\&nbsp;</p>#sui', $text, $descr);
+        if($descr)$item->descr = $this->txt($descr[1]);
+
+        print_r($item);
+        exit();
+
+        return $item;
+    }
+
+    
 	public function loadItems () 
 	{
-        return null;
 		$base = array ();
-		
-		//$this->httpClient->getUrlText ('http://f5jeans.ru/', null, false);
-		$content = $this->httpClient->getUrlText ($this->shopBaseUrl);
-		
-		$document=phpQuery::newDocument($content);
-		
-		//по списку пунктов меню
-		$menuList=$document->find('.grid_2 > #left-menu > li');
-		if ($menuList == "") $this->parseError ("Can't parse menu List\n");
-		foreach ($menuList as $menuLi)
-		{
-			$span=pq($menuLi)->find('span')->text();
-			if ($span == "") $this->parseError ("Can't parse span with type of collections\n");
-			if (stripos($span,'МУЖСКАЯ')!==false || stripos($span,'ЖЕНСКАЯ')!==false)
-			{
-				$allCatLinks=pq($menuLi)->find('ul > li > a');
-				if ($allCatLinks == "") $this->parseError ("Can't parse collection urls\n");
-				foreach ($allCatLinks as $catLink)
-				{
-					$catUrl=$this->shopBaseUrl.pq($catLink)->Attr('href');
-					if (!preg_match("/list\.php\?SECTION_ID=(\d+)/",$catUrl,$r))
-						$this->parseError ("Can't parse collection SECTION_ID\n");
-					
-					$catId=$r[1];
-					
-					$catName=pq($catLink)->text();
-					
-					$contentCat = $this->httpClient->getUrlText ($catUrl);
-					$documentCat=phpQuery::newDocument($contentCat);
-								
-					$allDivItems=$documentCat->find('.content2 > .b-item-photo');
-					if ($allDivItems == "") $this->parseError ("Can't parse div.b-item-photo\n");
-					
-					$catalogUrl = preg_replace("/\/[-A-Za-z0-9_]+\.php.*/","/",$catUrl);
-					
-					$items=array();
-					foreach ($allDivItems as $divItem)
-					{
-						$itemUrl=$this->shopBaseUrl.pq($divItem)->find('a')->Attr('href');
-						//$itemArt=pq($divItem)->find('.b-item-text')->text();
-						//echo $itemArt.'<br>';
-											
-						if (!preg_match("/detail\.php\?ID=(\d+)/",$itemUrl,$r))
-							$this->parseError ("Can't parse item id\n");
-							
-						//парсинг страницы товара
-						$itemInfo = $this->parseF5jeansGoodsPage ($itemUrl, $r[1], $catalogUrl);
-						if ($itemInfo === false)
-						{
-							$this->parseError ("Can't parse goods page '".$itemUrl."'");
-							return;
-						}
-						$items[] = $itemInfo;						
-					}
-										
-					//---------------------------------
-					if (isset ($base[$catName]))
-					{
-						foreach ($items as $item)
-							$base[$catName]->items[] = $item;
-					}
-					else
-					{
-						$collection = new ParserCollection();
-						$collection->id    = $catId;
-						$collection->url   = $catUrl;
-						$collection->name  = $catName;
-						$collection->items = $items;
-						$base[$catName] = $collection;
-					}
-					//unset($documentCat);
-				}	
-			}
-		}		
+
+        $text = $this->httpClient->getUrlText($this->shopBaseUrl);
+        preg_match('#<h1 class="red">(.+?)</h1>#sui', $text, $col_name);
+        preg_match_all('#<h2 class="red">(.+?)</h2>(.+?)</ul>#sui', $text, $collections, PREG_SET_ORDER);
+        $id = 1;
+        foreach($collections as $collection_value)
+        {
+            $collection = new ParserCollection();
+
+            $collection->name = $col_name[1]." - ".$this->txt($collection_value[1]);
+            $collection->id = $id++;
+            $collection->url = $this->shopBaseUrl;
+
+            preg_match_all('#<li><a href="/(.+?)"\s*>(.+?)</a></li>#sui',$collection_value[2], $categories, PREG_SET_ORDER);
+            foreach($categories as $category)
+            {
+                $categ_name = $this->txt($category[2]);
+                $text = $this->httpClient->getUrlText($this->shopBaseUrl.$category[1]);
+
+                preg_match_all('#<a href="/(catalog/detail.php\?ID=(\d+))">#sui', $text, $items, PREG_SET_ORDER);
+                foreach($items as $item)
+                    $collection->items[] = $this->parse_item($this->shopBaseUrl.$item[1], $categ_name);
+                
+            }
+
+            $base[] = $collection;
+        }
+        
 		return $this->saveItemsResult ($base);
 	}
 	
