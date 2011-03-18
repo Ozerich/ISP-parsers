@@ -99,7 +99,7 @@ class ISP_baon_ru extends ItemsSiteParser_Ozerich {
         foreach($collections as $collection_value)
         {
             $collection = new ParserCollection();
-            $collection->name = $col_name." - ".$collection_value[1];
+            $collection->name = $this->txt($col_name." - ".$collection_value[1]);
             $collection->url = $this->shopBaseUrl;
             $text = $collection_value[2];
 

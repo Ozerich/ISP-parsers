@@ -90,7 +90,7 @@ $allParsers = array
 	'78'	=> new ParserExecuteInfo ('ozerich/f5jeans_ru.php', 		'ISP_f5jeans_ru'),
 	'79'	=> new ParserExecuteInfo ('ozerich/grostyle_ru.php', 		'ISP_grostyle_ru'),
 	'80'	=> new ParserExecuteInfo ('ozerich/incanto_ru.php', 		'ISP_incanto_ru'),
-	'81'	=> new ParserExecuteInfo ('ozerich/serge-fashion_ru.php', 		'ISP_serge-fashion_ru'),
+	'81'	=> new ParserExecuteInfo ('ozerich/serge-fashion_by.php', 		'ISP_serge_fashion_by'),
 	'82'	=> new ParserExecuteInfo ('ozerich/tervolina_ru.php', 		'ISP_tervolina_ru'),
 
 

@@ -208,7 +208,12 @@ class ISP_accessorize_ru extends ItemsSiteParser_Ozerich
                 
                 preg_match_all('#<td width="1%"><a href="/(.+?)">#sui', $text, $items);
                 foreach($items[1] as $item)
-                    $collection->items[] = $this->parseTervolinaGoodsPage($this->shopBaseUrl.$item,1,1);
+                {
+                    $id = mb_substr($item, 0, -1);
+                    $item = $this->parseTervolinaGoodsPage($this->shopBaseUrl.$item,mb_substr($id, mb_strrpos($id,'/') + 1),1);
+                    if($item)
+                        $collection->items[] = $item;
+                }
             }
         
             $base[] = $collection;

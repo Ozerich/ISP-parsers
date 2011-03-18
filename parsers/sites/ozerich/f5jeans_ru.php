@@ -53,9 +53,6 @@ class ISP_f5jeans_ru extends ItemsSiteParser_Ozerich
         preg_match('#<p style="font-size:11px; font-weight: bold;">(.+?)<p>\&nbsp;</p>#sui', $text, $descr);
         if($descr)$item->descr = $this->txt($descr[1]);
 
-        print_r($item);
-        exit();
-
         return $item;
     }
 
@@ -72,7 +69,7 @@ class ISP_f5jeans_ru extends ItemsSiteParser_Ozerich
         {
             $collection = new ParserCollection();
 
-            $collection->name = $col_name[1]." - ".$this->txt($collection_value[1]);
+            $collection->name = $this->txt($col_name[1]." - ".$this->txt($collection_value[1]));
             $collection->id = $id++;
             $collection->url = $this->shopBaseUrl;
 

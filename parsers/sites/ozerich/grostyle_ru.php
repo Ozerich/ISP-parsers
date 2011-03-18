@@ -1,8 +1,8 @@
 <?php
 
-require_once PARSERS_BASE_DIR . '/parsers/baseClasses/drakon.php';
+require_once PARSERS_BASE_DIR . '/parsers/baseClasses/ozerich.php';
 
-class ISP_grostyle_ru extends ItemsSiteParser_Drakon {
+class ISP_grostyle_ru extends ItemsSiteParser_Ozerich {
 	protected $shopBaseUrl = 'http://grostyle.ru/'; 
 	
 
@@ -91,7 +91,7 @@ class ISP_grostyle_ru extends ItemsSiteParser_Drakon {
 						$base[$collectionName]->items[] = $item;
 				} else {
 					$collection = new ParserCollection ();
-					$collection->id = ereg_replace ( "[^0-9]", "", $all_link[1][0] );
+					$collection->id = preg_replace ( "[^0-9]", "", $all_link[1][0] );
 					$collection->url = $all_link[1][0];
 					$collection->name = $all_link[2][0];
 					$collection->items = $items;
@@ -155,13 +155,9 @@ class ISP_grostyle_ru extends ItemsSiteParser_Drakon {
 				
 				$newsp = '#<p>(.+?)</p>#sui';
 				preg_match_all ( $newsp, $nas, $news );
-			
-				
 
 				$linkp = '#<a class="lnk_cta" href="(.+?)">#sui';
 				preg_match_all ( $linkp, $nas, $link );
-				
-				
 
 				$news_body = $this->httpClient->getUrlText ( $link[1][0] );
 				$dat = '#<font class="data">(.+?)</font>#sui';
@@ -169,21 +165,19 @@ class ISP_grostyle_ru extends ItemsSiteParser_Drakon {
 			
 				$head = '#<h2>(.+?)</h2>#sui';
 				preg_match_all ( $head, $news_body, $header );
-				$ful = '#<DIV><(.+?)<IMG#sui';
-				preg_match_all ( $ful, $news_body, $full );
-				
-				
-				
+				$ful = '#<font class="data">.+?</font>(.+?)</div></div><div class="contentfooter">#sui';
+				preg_match ( $ful, $news_body, $full);
+
 
 				$base[] = $newsElem = new ParserNews ();
 				
 				$newsElem->id = preg_replace ( "/[^0-9]/", "", $link[1][0] );
 				$newsElem->date = $date[1][0];
-				$newsElem->contentShort = preg_replace ( "/&nbsp;/", "", strip_tags ( $news[1][0] ) );
+				$newsElem->contentShort = preg_replace ( "/&nbsp;/", "", $news[1][0] );
 				$newsElem->urlShort = $baseUrl;
 				$newsElem->urlFull = $link[1][0];
 				$newsElem->header = $header[1][0];
-				$newsElem->contentFull = preg_replace ( "/&nbsp;/", "", strip_tags ( $full[0][0] ) );
+				$newsElem->contentFull = preg_replace ( "/&nbsp;/", "", $full[1] );
 			}
 		}
 		

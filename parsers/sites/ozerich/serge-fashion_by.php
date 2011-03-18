@@ -1,11 +1,11 @@
 <?php
 
 /* Подключаем личный класс для операций по скачивания страниц: */
-require_once PARSERS_BASE_DIR . '/parsers/baseClasses/drakon.php';
+require_once PARSERS_BASE_DIR . '/parsers/baseClasses/ozerich.php';
 
-class ISP_serge_fashion_by extends ItemsSiteParser_Drakon
+class ISP_serge_fashion_by extends ItemsSiteParser_Ozerich
 {
-	protected $shopBaseUrl = 'http://serge-fashion.by'; // Адрес главной страницы сайта
+	protected $shopBaseUrl = 'http://serge-fashion.by/'; // Адрес главной страницы сайта
     var $_base=array();
 
 	function get_items($cont,$cat,$link){
@@ -150,41 +150,47 @@ class ISP_serge_fashion_by extends ItemsSiteParser_Drakon
 	// точки
 	public function loadPhysicalPoints ()
 	{
+        return null;
 	}
 	// парс новостей
 	public function loadNews ()
 	{
         $base = array ();
-
-		$baseUrl = 'http://serge-fashion.by/rus/news/';
-		$nurl    = 'http://letoile.ru/club/events/?news=';
-		$news = $this->httpClient->getUrlText ($baseUrl);
+        $url = $this->shopBaseUrl."rus/news/";
+		$news = $this->httpClient->getUrlText ($url);
 
         preg_match_all('!<div class="item">(.*?)<br class="clr" />!si',$news,$itm);
 
-        for ($i=0;$i<count($itm[0]);$i++){
-            preg_match('!href="(.*?)"!si',$itm[0][$i],$link);
-            preg_match('!<div class="date"><span>(.*?)</span></div>!si',$itm[0][$i],$dat);
-            preg_match('!<h4 style=" margin-top:0px;"><span style="cursor:pointer;" onclick="window.location=(.*?)">(.*?)</span></h4>(.*?)<span style="cursor:pointer;" onclick="window.location=(.*?)">(.*?)</span>!si',$itm[0][$i],$te);
-            preg_match('!~news__(.*?)=(.*?)-!si',$link[1]."-",$idd);
-            $id=$idd[2];
-            $nam=$te[2];
-            $short=$te[5];
+        foreach($itm[1] as $text)
+        {
+            $news_item = new ParserNews();
 
-            $contfull= $this->httpClient->getUrlText ($link[1]);
-            preg_match('!<div class="news">(.*?)<br class="clr" />!si',$contfull,$new);
-            preg_match('!<h4 style=" margin-top:0px;">(.*?)</h4>(.*?)<br class="clr" />!si',$new[0],$ful);
-            $full=trim($ful[2]);
+            preg_match('#<div class="date"><span>(.+?)</span></div>#sui', $text, $date);
+            $news_item->date = $date[1];
 
-            $base[] = $newsElem = new ParserNews();
-			$newsElem->id           = $id;
-			$newsElem->date         = $dat[1];
-			$newsElem->contentShort = $short;
-			$newsElem->urlShort     = $baseUrl;
-			$newsElem->urlFull      = $link[1];
-			$newsElem->header       = $nam;
-            $newsElem->contentFull  = $full;
+            preg_match('#<h4.+?>(.+?)</h4>#sui', $text, $header);
+            $news_item->header = $this->txt($header[1]);
+
+            preg_match_all('#<span.+?>(.+?)</span>#sui', $text, $content);
+            $news_item->contentShort = $content[1][1];
+
+            preg_match('#<a href="(http://serge-fashion.by/rus/news/.+?)"#sui', $text, $news_url);
+            if($news_url)
+            {
+                $news_item->urlFull = $news_url[1];
+                $text = $this->httpClient->getUrlText($this->urlencode_partial($news_item->urlFull));
+                preg_match('#</h4>(.+?)<br class="clr" />#sui', $text, $content);
+                if($content)
+                    $news_item->contentFull = $content[1];
+                $news_item->id = mb_substr($news_item->urlFull, mb_strrpos($news_item->urlFull, '=') + 1);
+            }
+
+            $news_item->urlShort = $url;
+
+            $base[] = $news_item;
         }
+
+
         return $this->saveNewsResult ($base);
 	}
 }
