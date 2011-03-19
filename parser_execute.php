@@ -31,7 +31,6 @@ $allParsers = array
     '10'	=> new ParserExecuteInfo ('ozerich/courtney_g_ru.php', 		'ISP_courtney_g_ru'),
 	'11'	=> new ParserExecuteInfo ('ozerich/zimaletto_ru.php', 		'ISP_zimaletto_ru'),
 	'12'	=> new ParserExecuteInfo ('ozerich/td_charm_ru.php', 		'ISP_td_charm_ru'),
-	'13'	=> new ParserExecuteInfo ('ozerich/cashmere_ru.php', 		'ISP_cashmere_ru'),
 	'14'	=> new ParserExecuteInfo ('ozerich/moda_comfort_ru.php', 		'ISP_moda_comfort_ru'),
 	'15'	=> new ParserExecuteInfo ('ozerich/shoes_ru.php', 		'ISP_shoes_ru'),
 	'16'	=> new ParserExecuteInfo ('ozerich/stylepark_ru.php', 		'ISP_stylepark_ru'),
@@ -60,7 +59,6 @@ $allParsers = array
 	'50'	=> new ParserExecuteInfo ('ozerich/inwm_ru.php', 		'ISP_inwm_ru'),
 	'51'	=> new ParserExecuteInfo ('ozerich/minomin_ru.php', 		'ISP_minomin_ru'),
 	'51'	=> new ParserExecuteInfo ('ozerich/naracamicie_ru.php', 		'ISP_naracamicie_ru'),
-	'52'	=> new ParserExecuteInfo ('ozerich/piaget_com.php', 		'ISP_piaget_com'),
 	'53'	=> new ParserExecuteInfo ('ozerich/sepalla_ru.php', 		'ISP_sepalla_ru'),
 	'54'	=> new ParserExecuteInfo ('ozerich/sofrench_ru.php', 		'ISP_sofrench_ru'),
 	'55'	=> new ParserExecuteInfo ('ozerich/uomo_ru.php', 		'ISP_uomo_ru'),
@@ -92,6 +90,18 @@ $allParsers = array
 	'80'	=> new ParserExecuteInfo ('ozerich/incanto_ru.php', 		'ISP_incanto_ru'),
 	'81'	=> new ParserExecuteInfo ('ozerich/serge-fashion_by.php', 		'ISP_serge_fashion_by'),
 	'82'	=> new ParserExecuteInfo ('ozerich/tervolina_ru.php', 		'ISP_tervolina_ru'),
+
+	'83'	=> new ParserExecuteInfo ('ozerich/mango_com.php', 		'ISP_mango_com'),
+	'84'	=> new ParserExecuteInfo ('ozerich/ardi_ru.php', 		'ISP_ardi_ru'),
+	'85'	=> new ParserExecuteInfo ('ozerich/ketroy_com.php', 		'ISP_ketroy_com'),
+	'86'	=> new ParserExecuteInfo ('ozerich/loccitane_ru.php', 		'ISP_loccitane_ru'),
+	'87'	=> new ParserExecuteInfo ('ozerich/ladygentleman_ru.php', 		'ISP_ladygentleman_ru'),
+	'88'	=> new ParserExecuteInfo ('ozerich/laurenvidal_ru.php', 		'ISP_laurenvidal_ru'),
+	'89'	=> new ParserExecuteInfo ('ozerich/cashmere_ru.php', 		'ISP_cashmere_ru'),
+	'90'	=> new ParserExecuteInfo ('ozerich/piaget_com.php', 		'ISP_piaget_com'),
+	'91'	=> new ParserExecuteInfo ('ozerich/people4people_ru.php', 		'ISP_people4people_ru'),
+
+
 
 
     
