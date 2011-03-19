@@ -96,7 +96,7 @@ class HttpClient extends Zend_Http_Client
 	 */
 	public function getUrlText ($url, $postData = null, $bUseCache = true)
 	{
-		return $this->loadPage ($url, $postData, $bUseCache, true);
+        return $this->loadPage ($url, $postData, $bUseCache, true);
 	}
 	
 	/*****************************************************************/
