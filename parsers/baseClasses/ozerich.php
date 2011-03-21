@@ -19,7 +19,7 @@ abstract class ItemsSiteParser_Ozerich extends ItemsSiteParser
     private $month_names = array(array("Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"),
                                 array("января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"));
 
-    private $prefixs = array("ТРК","ТД","магазин","ТРЦ","ЦММ","МТК","ТС","ТК","ТЦ", "Салон", "СТЦ","Молл","МТДЦ", "ТОЦ","CТЦ", "МЦ", "Студия", "Торговый центр", "РТЦ","РК","ТМ", "Большой ТЦ", "Малый ТЦ","Гипермаркет","Pepe Jeans", "Бутик", "Эксклюзивный отдел", "АТК", "БЦ", "Галерея моды", "СК", "ЦТиР", "Универмаг","Молл", "Мегацентр","сеть магазинов", "Центр","Салон-магазин","ЦУМ","магазины",'МЕГАСИТИ','МТДЦ');
+    private $prefixs = array("ТРК","ТД","магазин","ТРЦ","ЦММ","МТК","ТС","ТК","ТЦ", "Салон", "СТЦ","Молл","МТДЦ", "ТОЦ","CТЦ", "МЦ", "Студия", "Торговый центр", "РТЦ","РК","ТМ", "Большой ТЦ", "Малый ТЦ","Гипермаркет","Pepe Jeans", "Бутик", "Эксклюзивный отдел", "АТК", "БЦ", "Галерея моды", "СК", "ЦТиР", "Универмаг","Молл", "Мегацентр","сеть магазинов", "Центр","Салон-магазин","ЦУМ","магазины",'МЕГАСИТИ','МТДЦ','ГУМ');
 	
 	protected $httpClient;
 	
@@ -48,7 +48,8 @@ abstract class ItemsSiteParser_Ozerich extends ItemsSiteParser
 	public function txt($text)
 	{
 
-		$text = str_replace(array("<BR>",'<br />','<br>','<BR />','&nbsp;', "&laquo;", "&raquo", "&quot;", "&ndash;","&mdash;","«","»","&amp;","&gt","&minus;","&#0150;","&#150;","&bull;","&rsaquo;","&#233;",'\\"','/"',"&#40;","&#41","&#37;","&#171;","&#187;","&ldquo;","&rdquo;",'&#225;','&#218;','&#345;','&#353;','&amp;','&#215;'), array("\n","\n","\n","\n",' ','"','"','"','-',"-",'"','"','&',">","-","-","-","*",">","é",'"','"','(',')','%','"','"','"','"','á','Ú','ř','š','&','×'), $text);
+		$text = str_replace(array("&sbquo;","&rsquo;","<BR>",'<br />','<br>','<BR />','&nbsp;', "&laquo;", "&raquo;", "&quot;", "&ndash;","&mdash;","«","»","&amp;","&gt","&minus;","&#0150;","&#150;","&bull;","&rsaquo;","&#233;",'\\"','/"',"&#40;","&#41","&#37;","&#171;","&#187;","&ldquo;","&rdquo;",'&#225;','&#218;','&#345;','&#353;','&amp;','&#215;'),
+                            array(",",",","\n","\n","\n","\n",' ','"','"','"','-',"-",'"','"','&',">","-","-","-","*",">","é",'"','"','(',')','%','"','"','"','"','á','Ú','ř','š','&','×'), $text);
 		$text = strip_tags($text);
         $text = htmlspecialchars_decode($text);
 		$text = trim($text);
@@ -121,17 +122,14 @@ abstract class ItemsSiteParser_Ozerich extends ItemsSiteParser
         
         
         $text = str_replace(';',',',$text);
-        
+
         $metro_exist = (mb_strpos($text, " м.") !== false || mb_strpos($text, " м ") !== false || mb_strpos($text, ",м ") !== false
                 || mb_strpos($text, ";м ") !== false  || mb_strpos($text, "метро") !== false) || mb_strpos($text, ",м.") !== false
                 || mb_strpos($text, " м.") !== false || mb_strpos($text, ";м.") !== false || mb_substr($text,0,2) == "м."
-                || mb_strpos($text, "ст.м.") !== false;
-
+                || mb_strpos($text, "ст.м.") !== false || mb_strpos($text, "	м.") !== false;
 		while($metro_exist)
 		{
-
 			preg_match_all('#((?:(?:ст\.м|м|метро)(?:\.|\s)[^,\.]+)(?:,|\.|$))#sui', $text, $metro, PREG_SET_ORDER);
-
             for($i = 0; $i < count($metro); $i++)
             {
                 if(mb_strpos($metro[$i][1], "(") !== false) continue;
@@ -146,15 +144,15 @@ abstract class ItemsSiteParser_Ozerich extends ItemsSiteParser
             $metro_exist = (mb_strpos($text, " м.") !== false || mb_strpos($text, " м ") !== false || mb_strpos($text, ",м ") !== false
                 || mb_strpos($text, ";м ") !== false  || mb_strpos($text, "метро") !== false) || mb_strpos($text, ",м.") !== false
                 || mb_strpos($text, " м.") !== false || mb_strpos($text, ";м.") !== false || mb_substr($text,0,2) == "м."
-                || mb_strpos($text, "ст.м.") !== false;        }
+                || mb_strpos($text, "ст.м.") !== false || mb_strpos($text, "	м.") !== false;
+        }
 
 
 		$text = trim($text);
-		if($text && $text[mb_strlen($text)-1] == ',')
+
+		if($text && mb_substr($text, mb_strlen($text)  - 1, 1) == ',')
 			$text = mb_substr($text, 0, -1);
-
         $text = str_replace(array("___KM___", ',,',';,',', ,',' ,'), array("км", ',',',',',',','), $text);
-
 
         $last_char = mb_substr($text, mb_strlen($text) - 1, 1);
         if($last_char == ',' || $last_char == ';' || $last_char == '.')$text = mb_substr($text, 0, -1);
@@ -167,7 +165,6 @@ abstract class ItemsSiteParser_Ozerich extends ItemsSiteParser
         }
 
         $text = str_replace("___KM__","км", $text);
-		
 		return trim($text);
 	}
 	
@@ -258,7 +255,6 @@ abstract class ItemsSiteParser_Ozerich extends ItemsSiteParser
         }
         if($address[0] == ',')$address = mb_substr($address, 1);
         $address = $this->address($address);
-
         if(mb_strpos($address, ',') !== false)
         {
             $first = mb_strtolower(mb_substr($address, 0, mb_strpos($address, ',')));

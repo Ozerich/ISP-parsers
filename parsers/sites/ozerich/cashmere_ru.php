@@ -52,7 +52,7 @@ class ISP_cashmere_ru extends ItemsSiteParser_Ozerich
 
                     $item->url = $this->shopBaseUrl.$item_value[1];
 
-                   // $item->url = "http://shop.cashmere.ru/Catalog/Style.aspx?cid=2&tid=615&bid=&sid=10487";
+                    //$item->url = "http://shop.cashmere.ru/Catalog/Style.aspx?cid=1&tid=634&bid=&sid=12429";
                     
                     $item->name = $item_value[2];
                     $item->categ = $category_name;
@@ -104,9 +104,24 @@ class ISP_cashmere_ru extends ItemsSiteParser_Ozerich
                     }
 
                     preg_match('#<table id="ctl00_ctl00_ContentPlaceHolder1_CPH2_rPictures_groupPlaceholderContainer" class="photo-preview">(.+?)</table>#sui', $text, $image_text);
-                    preg_match_all("#<a href='/(.+?)'>#sui", $image_text[1], $images);
-                    foreach($images[1] as $image)
-                        $item->images[] = $this->loadImage($this->shopBaseUrl.$image);
+                    $images_hash = array();
+                    preg_match_all("#<a href='/(.+?)'>\s*<img src=\"/(.+?)\"#sui", $image_text[1], $images, PREG_SET_ORDER);
+                    foreach($images as $image)
+                    {
+                        $url1 = $this->shopBaseUrl.$image[1];
+                        $url2 = $this->shopBaseUrl.$image[2];
+                        if(in_array($url1, $images_hash))
+                            $image = $this->loadImage($url2);
+                        else
+                        {
+                            $image = $this->loadImage($url1);
+                            $images_hash[] = $url1;
+                        }
+
+                        if($image)
+                            $item->images[] = $image;
+                    }
+
 
 
                     $collection->items[] = $item;
